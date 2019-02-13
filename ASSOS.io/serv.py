@@ -12,34 +12,181 @@ app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'secret'
 socketio = SocketIO(app)
-
-player_speed = 3
-bullet_speed = 8
-bigballRadius = 15
-smallballRadius = 3
-dead_radius = 6
-
-players = {}
-bullets = {}
-teams = {"red": {"color": '#ff0000', "players_number": 0, 'spawn': [0, 0], 'score': 0},
-         "blue": {"color": '#0000ff', "players_number": 0, 'spawn': [map_height - 1, map_width - 1], 'score': 0}
-         }
-
 server_clock = time.clock()
 last_update = server_clock
-refreshing_time = 1 / 120
 last_broadcast = time.clock()
-mort=False
-
-##########
-bonus = {}
-bonus_list = ["heal", "boost"]
-proc_distance = 20
-nb_bonus = 5
-respawn_time = 5
 last_bonus_respawn = server_clock
 
+class bonus : 
+    def __init__(self):
+        self.nb_bonus = 5
+        self.bonus_list = ["heal", "boost"]
+        self.bonus = {}
+        for _ in range(self.nb_bonus):
+            self.spawn_bonus()
+        
+        
+    def spawn_bonus(self):
+        id = generate_valid_id(self.bonus)
+        x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
+        while map[x, y]:
+            x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
+        type = self.bonus_list[random.randint(0, len(self.bonus_list) - 1)]
+        self.bonus[id] = {'type': type, "x": y, "y": x}
+    
 
+class game(bonus):
+    def __init__(self) :
+        # Game objects
+        self.players = {}
+        self.bullets = {}
+        self.teams = {"red": {"color": '#ff0000', "players_number": 0, 'spawn': [0, 0], 'score': 0},
+                      "blue": {"color": '#0000ff', "players_number": 0, 'spawn': [map_height - 1, map_width - 1], 'score': 0}
+                     }
+        bonus.__init__(self)
+        
+        # Game Parameters :
+        self.player_speed = 3
+        self.bullet_speed = 8
+        self.bigballRadius = 15
+        self.smallballRadius = 3
+        self.dead_radius = 6
+        self.proc_distance = 20
+        self.respawn_time = 5
+        self.refreshing_time = 1 / 120
+        
+        
+    def handle_shot(self,id, vx, vy):
+        bullet_id = generate_valid_id(self.bullets)
+        self.bullets[bullet_id] = {"x": self.players[id]["x"], "y": self.players[id]["y"],
+                          "vx": vx, "vy": vy,
+                          "team": self.players[id]["team"],
+                          "player_id": id}
+
+    def handle_new_connect(self):
+        id = generate_valid_id(self.players)
+        team_ = self.select_team()
+        self.teams[team_]["players_number"] += 1
+        print("Un joueur connecte, id : " + str(id), "team : " + team_)
+
+        self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
+                   "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
+                   "pseudo": session['pseudo'], "score": 0,
+                   "speed": self.player_speed}
+        emit('authentification', {"id": id,
+                              "map_width": map_width, "map_height": map_height})
+
+    def __getattr__(self,name):
+        if name == 'bullets':
+            return self.bullets
+        if name == 'players':
+            return self.players
+        if name == 'teams':
+            return self.teams
+        if name == 'bonus':
+            return self.bonus
+        if name == 'refreshing_time':
+            return self.refreshing_time
+            
+                    
+    def players_update(self):
+        global server_clock, last_update, last_bonus_respawn
+        server_clock = time.clock()
+        bullets_to_pop = []
+        players_to_pop = []
+        bonus_to_pop = []
+    
+        if server_clock - last_bonus_respawn > self.respawn_time:
+            self.spawn_bonus()
+            last_bonus_respawn = server_clock
+        for id in self.players:
+            self.update_pos(id)
+            for id_bonus in self.bonus:
+                self.pick_bonus(id,id_bonus,bonus_to_pop)
+        for id_bul in self.bullets:
+            self.update_bullet(id_bul,bullets_to_pop)
+            for id_play in self.players:
+                self.collision(id_bul,id_play,bullets_to_pop)
+                if self.players[id_play]["r"] < self.dead_radius:
+                    self.death(id_play,id_bul,players_to_pop)
+                    
+        for id in bullets_to_pop:
+            self.bullets.pop(id, None)
+        for id_bonus in bonus_to_pop:
+            self.bonus.pop(id_bonus)
+    
+        for id in players_to_pop:
+            self.teams[self.players[id]["team"]]["self.players_number"] -= 1
+            self.players.pop(id, None)
+            socketio.emit('dead', id, broadcast=True)
+        last_update = server_clock
+        
+
+    def select_team(self):
+        min_p, t_ = 1000, ''
+        for t in self.teams:
+            if self.teams[t]["players_number"] < min_p:
+                t_ = t
+                min_p = min(min_p, self.teams[t]["players_number"])
+        return t_
+        
+    
+    def update_pos(self,id):
+        new_x = self.players[id]["x"] + self.players[id]["vx"] * (server_clock - last_update) * self.players[id]["speed"]
+        new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id]["speed"]
+        if (0 < new_y < map_height) and (0 < new_x < map_width):
+            if map[int(new_y)][int(new_x)] == True:
+                new_y, new_x = inner_slide(self.players[id]["y"], self.players[id]["x"], new_y, new_x)
+        else:
+            new_x = max(min(new_x, map_width), 0)
+            new_y = max(min(new_y, map_height), 0)
+        self.players[id]["x"] = new_x
+        self.players[id]["y"] = new_y
+
+    def pick_bonus(self,id,id_bonus,topop):
+        if (self.bonus[id_bonus]["x"] - self.players[id]["x"]) ** 2 + \
+                (self.bonus[id_bonus]["y"] - self.players[id]["y"]) ** 2 <= \
+                self.proc_distance ** 2:
+            if self.bonus[id_bonus]["type"] == "heal":
+                self.players[id]["r"] += 6
+            if self.bonus[id_bonus]["type"] == "boost":
+                self.players[id]["speed"] += 2
+            topop.append(id_bonus)
+
+    def update_bullet(self,id,topop):
+        new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
+        new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
+        if (0 < new_y < map_height) and (0 < new_x < map_width) \
+         and (map[int(new_y)][int(new_x)] == False):
+            self.bullets[id]["x"] = new_x
+            self.bullets[id]["y"] = new_y
+        else:
+            topop.append(id)
+    
+    def collision(self,id,idp,topop):
+        if (self.players[idp]["team"] != self.bullets[id]["team"] and
+                (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
+                (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=
+                (self.players[idp]["r"] + self.smallballRadius) ** 2):
+            self.players[idp]["r"] -= 4
+            topop.append(id)
+    
+    def death(self,idp,id,topop):
+        topop.append(idp)
+        self.teams[self.players[self.bullets[id]["player_id"]]["team"]]["score"] += 1
+        self.players[self.bullets[id]["player_id"]]["score"] += 1
+        socketio.emit('score_update', 
+                    {'score_red': self.teams['red']['score'],
+                    'score_blue': self.teams['blue']['score']},
+                    broadcast=True)
+                    
+    def handle_movement(self, id, vx, vy):
+        self.players[id]['vx'] = vx
+        self.players[id]['vy'] = vy
+
+## Short useful functions
+
+#generate id
 def generate_valid_id(dict):
     id = int(time.clock() * 10 ** 5)
     while str(id) in dict:
@@ -47,22 +194,6 @@ def generate_valid_id(dict):
     return id
 
 
-def spawn_bonus(bonus):
-    id = generate_valid_id(bonus)
-
-    x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
-    while map[x, y]:
-        x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
-
-    type = bonus_list[random.randint(0, len(bonus_list) - 1)]
-    bonus[id] = {'type': type, "x": y, "y": x}
-
-
-for b in range(nb_bonus):
-    spawn_bonus(bonus)
-
-
-###########
 
 # returning a random color
 def getRandomColor():
@@ -71,6 +202,9 @@ def getRandomColor():
     for i in range(6):
         color += letters[int(np.floor(random.random() * 16))]
     return color
+
+
+##Socketio functions
 
 
 # defining the /game page by the file client.html
@@ -106,70 +240,31 @@ def login():
         else:
             return render_template('login.html')
 
-def select_team():
-    min_p, t_ = 1000, ''
-    for t in teams:
-        if teams[t]["players_number"] < min_p:
-            t_ = t
-            min_p = min(min_p, teams[t]["players_number"])
-    return t_
-
-
-def write_timefile(file, t, data, type):
-    file.write(format(t, '.10f') + ",")
-    if type == 'int':
-        file.write(str(len(data)) + "\n")
-    if type == 'float':
-        file.write(format(data, '.10f') + "\n")
-    file.flush()
 
 
 @socketio.on('new_connection')
 def handle_new_connection():
-    id = generate_valid_id(players)
-
-    team_ = select_team()
-    teams[team_]["players_number"] += 1
-    print("Un joueur connecte, id : " + str(id), "team : " + team_)
-
-    players[id] = {"x": teams[team_]["spawn"][1], "y": teams[team_]["spawn"][0],
-                   "vx": 0, "vy": 0, "r": bigballRadius, "team": team_,
-                   "pseudo": session['pseudo'], "score": 0,
-                   "speed": player_speed}
-    emit('authentification', {"id": id,
-                              "map_width": map_width, "map_height": map_height})
-
-    write_timefile(file=file_p, t=time.clock(),
-                   data=players, type='int')
-
-
+    game_session.handle_new_connect()
+    
+    
+@socketio.on('client_shoot')
+def handle_shoot(id, vx, vy):
+    game_session.handle_shot(id, vx, vy)
+    
 @socketio.on('client_speed_update')
 def handle_move(id, vx, vy):
-    players[id]['vx'] = vx
-    players[id]['vy'] = vy
-
+    game_session.handle_movement(id, vx, vy)
 
 @socketio.on('out')
 def out():
-	print("aaaaaaaaaaaaaaaaaaaaaaa")
-	redirect('/end_game')
-
-@socketio.on('client_shoot')
-def handle_shoot(id, vx, vy):
-    bullet_id = generate_valid_id(bullets)
-
-    bullets[bullet_id] = {"x": players[id]["x"], "y": players[id]["y"],
-                          "vx": vx, "vy": vy,
-                          "team": players[id]["team"],
-                          "player_id": id}
-
-
+    print("aaaaaaaaaaaaaaaaaaaaaaa")
+    redirect('/end_game')
+    
 @socketio.on('logout')
 def handle_logout():
     return redirect('/end_game')
 
 
-# defining the /end_game page
 @app.route('/end_game', methods=['GET', 'POST'])
 def players_dead():
     # if the player click on the button then he his redirected to the game
@@ -179,112 +274,17 @@ def players_dead():
     else:
         return render_template('end_game.html')
 
-def update_pos(id):
-    new_x = players[id]["x"] + players[id]["vx"] * (server_clock - last_update) * players[id]["speed"]
-    new_y = players[id]["y"] + players[id]["vy"] * (server_clock - last_update) * players[id]["speed"]
-    if (0 < new_y < map_height) and (0 < new_x < map_width):
-        if map[int(new_y)][int(new_x)] == True:
-            new_y, new_x = inner_slide(players[id]["y"], players[id]["x"], new_y, new_x)
-    else:
-        new_x = max(min(new_x, map_width), 0)
-        new_y = max(min(new_y, map_height), 0)
-    players[id]["x"] = new_x
-    players[id]["y"] = new_y
-
-def pick_bonus(id,id_bonus,topop):
-    if (bonus[id_bonus]["x"] - players[id]["x"]) ** 2 + \
-            (bonus[id_bonus]["y"] - players[id]["y"]) ** 2 <= \
-            proc_distance ** 2:
-        if bonus[id_bonus]["type"] == "heal":
-            players[id]["r"] += 6
-        if bonus[id_bonus]["type"] == "boost":
-            players[id]["speed"] += 2
-        topop.append(id_bonus)
-
-def update_bullet(id,topop):
-    new_x = bullets[id]["x"] + bullets[id]["vx"] * (server_clock - last_update) * bullet_speed
-    new_y = bullets[id]["y"] + bullets[id]["vy"] * (server_clock - last_update) * bullet_speed
-    if (0 < new_y < map_height) and \
-            (0 < new_x < map_width) and \
-            (map[int(new_y)][int(new_x)] == False):
-        bullets[id]["x"] = new_x
-        bullets[id]["y"] = new_y
-    else:
-        topop.append(id)
-
-def collision(id,idp,topop):
-    if (players[idp]["team"] != bullets[id]["team"] and
-            (players[idp]["x"] - bullets[id]["x"]) ** 2 +
-            (players[idp]["y"] - bullets[id]["y"]) ** 2 <=
-            (players[idp]["r"] + smallballRadius) ** 2):
-        players[idp]["r"] -= 4
-        topop.append(id)
-
-def death(idp,id,topop):
-    topop.append(idp)
-    teams[players[bullets[id]["player_id"]]["team"]]["score"] += 1
-    players[bullets[id]["player_id"]]["score"] += 1
-    socketio.emit('score_update', {'score_red': teams['red']['score'],
-                                    'score_blue': teams['blue']['score']},
-                    broadcast=True)
-def players_update():
-    global server_clock, last_update, last_bonus_respawn
-    server_clock = time.clock()
-    topopbul = []
-    topopplay = []
-    topopbonus = []
-
-    if server_clock - last_bonus_respawn > respawn_time:
-        spawn_bonus(bonus)
-        last_bonus_respawn = server_clock
-    for id in players:
-        update_pos(id)
-        for id_bonus in bonus:
-            pick_bonus(id,id_bonus,topopbonus)
-    for id_bul in bullets:
-        update_bullet(id_bul,topopbul)
-        for id_play in players:
-            collision(id_bul,id_play,topopbul)
-            if players[id_play]["r"] < dead_radius:
-                death(id_play,id_bul,topopplay)
-                
-    for id in topopbul:
-        bullets.pop(id, None)
-    for id_bonus in topopbonus:
-        bonus.pop(id_bonus)
-
-    for id in topopplay:
-        teams[players[id]["team"]]["players_number"] -= 1
-        players.pop(id, None)
-        socketio.emit('dead', id, broadcast=True)
-    last_update = server_clock
-
-    write_timefile(file=file_t, t=server_clock,
-                   data=(time.clock() - server_clock) * 1000, type='float')
-
 
 @socketio.on('request_frame')
 def handle_request_frame():
     global last_broadcast
-    if time.clock() - last_broadcast > refreshing_time:
-        players_update()
-        socketio.emit('update', {"players": players, "bullets": bullets, "bonus": bonus}, broadcast=True)
+    if time.clock() - last_broadcast > game_session.refreshing_time:
+        game_session.players_update()
+        socketio.emit('update', {"players": game_session.players, "bullets": game_session.bullets, "bonus": game_session.bonus}, broadcast=True)
         last_broadcast = time.clock()
 
 
-def create_history_file(filename):
-    file = open(filename, 'w')
-    file.seek(0)
-    file.truncate()
-    return file
-
-
-# defining the application
-
 if __name__ == '__main__':
-    file_t = create_history_file('activity_log.txt')
-    file_p = create_history_file('players_connected.txt')
-
-    # app.debug = True
     print("map size : ", map_width, map_height, " : ", map_width * map_height)
-    socketio.run(app, host='127.0.0.1', port=5000)
+    game_session = game()
+    socketio.run(app, host='127.0.0.1', port = 5000)

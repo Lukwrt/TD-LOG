@@ -143,7 +143,8 @@ function drawScore(logs)
   // calculating the 3 best score and updating the table id_best_score which contains the id of the 3 best players
   for (var idp in logs.client_players)
   {
-    if(logs.client_players[idp]["score"]>best_score[0]){
+    if( logs.client_players[idp]["score"] > best_score[0] )
+    {
       id_best_score[2] = id_best_score[1];
       best_score[2] = best_score[1];
       id_best_score[1] = id_best_score[0];

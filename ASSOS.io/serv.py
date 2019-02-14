@@ -48,7 +48,7 @@ class game(bonus):
 
         # Game Parameters :
         self.player_speed = 2
-        self.bullet_speed = 8
+        self.bullet_speed = 6
         self.bigballRadius = 15
         self.smallballRadius = 3
         self.dead_radius = 6

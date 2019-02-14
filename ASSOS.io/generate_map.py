@@ -134,7 +134,6 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
     print(contours[i][k])
     t = tanj_map[contours[i][k][0], contours[i][k][1]]
     p = int((vx + vy * t) / np.sqrt(1 + t ** 2))
-    print(p)
     n_x, n_y = get(contours[i], k + p)
     if (n_x - x) * vx + (n_y - y) * vy <= 0:
         n_x, n_y = get(contours[i], k - p)
@@ -144,6 +143,7 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
 def load_map (filename, bw = 4, b = 5):
     map, width, height = file_to_map(filename)
     contours = get_contour(map)
+
     int_map = map.astype(int)
     tanj_map = compute_tangeante(int_map, contours, bw = bw)
     near_border = compute_nearest_border(int_map, contours, b = b)
@@ -160,7 +160,7 @@ def load_map (filename, bw = 4, b = 5):
     return map, width, height, inner_slide
 if __name__ == "__main__":
     # new_img, width, height = file_to_map("../maps/test_img2.png")
-    new_img, width, height = file_to_map("../maps/contour_test2.png")
+    new_img, width, height = file_to_map("../maps/map_alpha.png")
 
     contours = get_contour(new_img)
     c_map = np.zeros((height, width))
@@ -169,20 +169,12 @@ if __name__ == "__main__":
     tanj_map = compute_tangeante(new_img, contours, bw=2)
     near_contour_map = compute_nearest_border(new_img, contours, b=3)
 
-    lw = 1
+    lw = 4
     for c in contours:
         for k in range(len(c)):
-            new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = k + 40
-    # pp.pprint(near_contour_map[40:60,80:100])
+            new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = 10*(k+2)/len(c)
+    # p
+    # p.pprint(near_contour_map[40:60,80:100])
     # pp.pprint(tanj_map[40:60,80:100])
-
-    x, y, x_, y_ = 58,31,69,41
-    new_img[x, y] = -100
-    new_img[x_, y_] = 100
-
-    n_x, n_y = slide(x, y, x_, y_, near_contour_map, tanj_map, contours)
-    print(n_x, n_y)
-    new_img[n_x, n_y] = -200
-    new_img[60,31] = -200
 
     print_map(new_img)

@@ -243,7 +243,10 @@ function draw(logs)
   if (drawing)
   {
     players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
-
+    if (logs.id != -1)
+    {
+    drawWidgets(logs);
+    }
     for (var id_players in logs.client_players)
     {
       id_players = Number(id_players);
@@ -254,10 +257,11 @@ function draw(logs)
         let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
           logs.client_players[id_players]["r"], logs.team_colors[logs.client_players[id_players]["team"]]);
           B.drawBall();
-          drawWidgets(logs,id_players);
+
           if (logs.id != -1 )
           {
-            drawLife(logs.client_players[logs.id]["r"]);
+            drawPseudo(logs,id_players);
+            
           }
         }
       }

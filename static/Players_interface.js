@@ -1,6 +1,7 @@
 // function drawing the life of the player in function of the radius of his ball
-function drawLife(rayon)
+function drawLife(logs)
 {
+
   // h,v the x,y coordinates of the center of the life bar
   var h = 100;
   var v = 100;
@@ -9,9 +10,9 @@ function drawLife(rayon)
   var diff;
   var arrondi;
 
-  var vie = (rayon/15)*100;
+  var vie = (logs.client_players[logs.id]["r"]/15)*100;
   // base life : rayon = 15 if more because of the bonus, the circle stay fully green
-  if(rayon > 15){
+  if(logs.client_players[logs.id]["r"] > 15){
     diff = Math.PI*2;
   }
   else{
@@ -143,31 +144,14 @@ function drawScore(logs)
   // calculating the 3 best score and updating the table id_best_score which contains the id of the 3 best players
   for (var idp in logs.client_players)
   {
-<<<<<<< HEAD:ASSOS.io/static/Players_interface.js
-    if(client_players[idp]["score"]>best_score[0]){
-=======
     if( logs.client_players[idp]["score"] > best_score[0] )
     {
->>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:static/Players_interface.js
       id_best_score[2] = id_best_score[1];
       best_score[2] = best_score[1];
       id_best_score[1] = id_best_score[0];
       best_score[1] = best_score[0];
       id_best_score[0] = idp;
-<<<<<<< HEAD:ASSOS.io/static/Players_interface.js
-      best_score[0] = client_players[idp]["score"];
 
-    }
-    else if(client_players[idp]["score"]>best_score[1]){
-      id_best_score[2] = id_best_score[1];
-      best_score[2] = best_score[1];
-      id_best_score[1] = idp;
-      best_score[1] = client_players[idp]["score"];
-    }
-    else if(client_players[idp]["score"]>best_score[2]){
-      id_best_score[2] = idp;
-      best_score[2] = client_players[idp]["score"];
-=======
       best_score[0] = logs.client_players[idp]["score"];
 
     }
@@ -180,7 +164,6 @@ function drawScore(logs)
     else if(logs.client_players[idp]["score"]>best_score[2]){
       id_best_score[2] = idp;
       best_score[2] = logs.client_players[idp]["score"];
->>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:static/Players_interface.js
     }
   }
 
@@ -197,15 +180,11 @@ function drawScore(logs)
   {
     if(id_best_score[idp] != -1){
       //score of the player
-<<<<<<< HEAD:ASSOS.io/static/Players_interface.js
-      var sc = client_players[id_best_score[idp]]["score"];
-      // string we want to write
-      var s = client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
-=======
+
       var sc = logs.client_players[id_best_score[idp]]["score"];
       // string we want to write
       var s = logs.client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
->>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:static/Players_interface.js
+
 
       // wrting the score on the canvas
       players_ctx.beginPath();
@@ -273,9 +252,9 @@ function drawTeamScores(logs){
 
 }
 
-function drawWidgets(logs,id_players)
+function drawWidgets(logs)
 {
-  drawPseudo(logs,id_players);
+  drawLife(logs);
   drawMiniMap(logs);
   drawScore(logs);
   drawTeamScores(logs);

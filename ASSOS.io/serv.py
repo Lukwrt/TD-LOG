@@ -132,14 +132,16 @@ class game(bonus):
         
     
     def update_pos(self,id):
+        assert (0<=players[id]["x"]<=map_width) and (0<=players[id]["y"]<=map_height),"player out of map"
+        assert map[int(players[id]["y"])][int(players[id]["x"])]==False,"player in obstacle"
         new_x = self.players[id]["x"] + self.players[id]["vx"] * (server_clock - last_update) * self.players[id]["speed"]
         new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id]["speed"]
         if (0 < new_y < map_height) and (0 < new_x < map_width):
             if map[int(new_y)][int(new_x)] == True:
                 new_y, new_x = inner_slide(self.players[id]["y"], self.players[id]["x"], new_y, new_x)
         else:
-            new_x = max(min(new_x, map_width), 0)
-            new_y = max(min(new_y, map_height), 0)
+            new_x = max(min(new_x, map_width-1), 0)
+            new_y = max(min(new_y, map_height-1), 0)
         self.players[id]["x"] = new_x
         self.players[id]["y"] = new_y
 
@@ -154,6 +156,8 @@ class game(bonus):
             topop.append(id_bonus)
 
     def update_bullet(self,id,topop):
+        assert (0<bullets[id]["x"]<map_width) and (0<bullets[id]["y"]<map_height),"bullet out of map"
+        assert map[int(bullets[id]["y"])][int(bullets[id]["x"])]==False,"bullet in obstacle"
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \

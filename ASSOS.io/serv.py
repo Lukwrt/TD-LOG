@@ -58,6 +58,7 @@ class game(bonus):
         self.prevent_TP = 50
 
     def handle_shot(self, id, vx, vy):
+        assert type(id)==int, "wrong id"
         bullet_id = generate_valid_id(self.bullets)
         self.bullets[bullet_id] = {"x": self.players[id]["x"], "y": self.players[id]["y"],
                                    "vx": vx, "vy": vy,
@@ -68,14 +69,18 @@ class game(bonus):
         id = generate_valid_id(self.players)
         team_ = self.select_team()
         self.teams[team_]["players_number"] += 1
+        
         print("Un joueur connecte, id : " + str(id), "team : " + team_)
 
+        self.create_player(id,team_)
+        emit('authentification', {"id": id,
+                                  "map_width": map_width, "map_height": map_height})
+                                  
+    def create_player(self,id,team_):
         self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
                             "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
                             "pseudo": session['pseudo'], "score": 0,
                             "speed": self.player_speed}
-        emit('authentification', {"id": id,
-                                  "map_width": map_width, "map_height": map_height})
 
     def __getattr__(self, name):
         if name == 'bullets':
@@ -88,6 +93,8 @@ class game(bonus):
             return self.bonus
         if name == 'refreshing_time':
             return self.refreshing_time
+        else :
+            assert False, "wrong name"
 
     def players_update(self):
         global server_clock, last_update, last_bonus_respawn
@@ -128,17 +135,9 @@ class game(bonus):
                 t_ = t
                 min_p = min(min_p, self.teams[t]["players_number"])
         return t_
-<<<<<<< HEAD
-        
-    
-    def update_pos(self,id):
-        assert (0<=players[id]["x"]<=map_width) and (0<=players[id]["y"]<=map_height),"player out of map"
-        assert map[int(players[id]["y"])][int(players[id]["x"])]==False,"player in obstacle"
-        new_x = self.players[id]["x"] + self.players[id]["vx"] * (server_clock - last_update) * self.players[id]["speed"]
-        new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id]["speed"]
-=======
 
     def update_pos(self, id):
+        assert self.players[id]["r"] >= self.dead_radius,"player should be dead"
         assert (0 <= self.players[id]["x"] <= map_width) and (
                     0 <= self.players[id]["y"] <= map_height), "player out of map"
         assert map[int(self.players[id]["y"])][int(self.players[id]["x"])] == False, "player in obstacle"
@@ -146,28 +145,23 @@ class game(bonus):
             "speed"]
         new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id][
             "speed"]
->>>>>>> 8e194a7fc67e384895608380b4debc96e7d177d2
         if (0 < new_y < map_height) and (0 < new_x < map_width):
             if map[int(new_y)][int(new_x)] == True:
                 new_y, new_x = inner_slide(self.players[id]["y"], self.players[id]["x"], new_y, new_x)
                 if sqrt((new_x - self.players[id]["x"]) ** 2 + (new_y - self.players[id]["y"]) ** 2) > self.prevent_TP:
                     new_x, new_y = self.players[id]["x"], self.players[id]["y"]
         else:
-<<<<<<< HEAD
-            new_x = max(min(new_x, map_width-1), 0)
-            new_y = max(min(new_y, map_height-1), 0)
-=======
             new_x = max(min(new_x, map_width - 1), 0)
             new_y = max(min(new_y, map_height - 1), 0)
 
         # if sqrt((new_x-self.players[id]["x"])**2+(new_y-self.players[id]["y"])**2) > 100:
         #     print(new_x - self.players[id]["x"] , new_y - self.players[id]["y"] )
 
->>>>>>> 8e194a7fc67e384895608380b4debc96e7d177d2
         self.players[id]["x"] = new_x
         self.players[id]["y"] = new_y
 
     def pick_bonus(self, id, id_bonus, topop):
+        assert id_bonus in self.bonus, "bonus does not exist"
         if (self.bonus[id_bonus]["x"] - self.players[id]["x"]) ** 2 + \
                 (self.bonus[id_bonus]["y"] - self.players[id]["y"]) ** 2 <= \
                 self.proc_distance ** 2:
@@ -177,15 +171,9 @@ class game(bonus):
                 self.players[id]["speed"] += 2
             topop.append(id_bonus)
 
-<<<<<<< HEAD
-    def update_bullet(self,id,topop):
-        assert (0<bullets[id]["x"]<map_width) and (0<bullets[id]["y"]<map_height),"bullet out of map"
-        assert map[int(bullets[id]["y"])][int(bullets[id]["x"])]==False,"bullet in obstacle"
-=======
     def update_bullet(self, id, topop):
         assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
         assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
->>>>>>> 8e194a7fc67e384895608380b4debc96e7d177d2
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -196,6 +184,8 @@ class game(bonus):
             topop.append(id)
 
     def collision(self, id, idp, topop):
+        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
+        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         if (self.players[idp]["team"] != self.bullets[id]["team"] and
                 (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
                 (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=
@@ -204,6 +194,7 @@ class game(bonus):
             topop.append(id)
 
     def death(self, idp, id, topop):
+        assert idp not in topop, "player already dead"
         topop.append(idp)
         self.teams[self.players[self.bullets[id]["player_id"]]["team"]]["score"] += 1
         self.players[self.bullets[id]["player_id"]]["score"] += 1
@@ -324,3 +315,21 @@ if __name__ == '__main__':
     print("map size : ", map_width, map_height, " : ", map_width * map_height)
     game_session = game()
     socketio.run(app, host='127.0.0.1', port=5000)
+
+##
+
+class Test_game(unittest.TestCase):
+    def inside_box(self,x,y,vx,vy):
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

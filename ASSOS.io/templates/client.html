@@ -30,220 +30,226 @@
 
   <script>
 
-    var map_canvas = document.getElementById("map");
-    map_canvas.height = window.innerHeight;
-    map_canvas.width = window.innerWidth;
-    var map_ctx = map_canvas.getContext("2d");
 
-    var map_rendered = document.createElement("canvas");
-    var map_rendered_ctx;
+  // Canvas parameters :
 
-    var players_canvas = document.getElementById("players");
-    var players_ctx = players_canvas.getContext("2d");
-    players_canvas.height = window.innerHeight;
-    players_canvas.width = window.innerWidth;
+  var map_canvas = document.getElementById("map");
+  var map_ctx = map_canvas.getContext("2d");
+  var map_rendered = document.createElement("canvas");
+  var map_rendered_ctx;
 
-    var created = false;
-    var bigballRadius = 10;
-    var vmax = 250;
-    var smallballRadius = 3;
-    var alive = true;
+  map_canvas.height = window.innerHeight;
+  map_canvas.width = window.innerWidth;
 
-    var spacePressed = false;
-    var once = true;
-    var quadwidth = 2;
-    var quadspace = 50;
+  var players_canvas = document.getElementById("players");
+  var players_ctx = players_canvas.getContext("2d");
+  players_canvas.height = window.innerHeight;
+  players_canvas.width = window.innerWidth;
 
+  //  Others
+  var spacePressed = false;
+  var once = true;
+  var quadwidth = 2;
+  var quadspace = 50;
+  var drawing = true;
+  var canvas_width = map_canvas.width ;
+  var canvas_height = map_canvas.height;
+  var bonus_width = 40 ;
+  var bonus_height = 40;
+  var socket = io.connect('http://127.0.0.1:5000');
 
-    var drawing = true;
-    var personalX = 0 ;
-    var vx ;
-    var personalY = 0 ;
-    var vy ;
-    var v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) ) ;
-
-    var width = map_canvas.width ;
-    var height = map_canvas.height ;
-    var map ;
-    var map_width  = 486;
-    var map_height  = 453;
-    var bonus_width = 40 ;
-    var bonus_height = 40;
-
-    var score_red = 0;
-    var score_blue = 0;
-
-    var id = -1 ;
-    var socket = io.connect('http://127.0.0.1:5000');
-
-
-    client_players = {} ;
-    client_bullets = {} ;
-    client_color = {} ;
-    client_bonus = {} ;
-    var team_colors = {'red' : '#ff0000', 'blue' : '#0000ff'} ;
-
-    socket.on('connect', function()
-      {    socket.emit('new_connection');
-    });
-
-    socket.on('dead',function(ID){
-      if (ID == id){
-        alive = false ;
-        socket.emit('logout');
-      }
-    });
-    socket.on('score_update',function(scores){
-      score_red = scores['score_red'];
-      score_blue = scores['score_blue'];
-    });
-
-    function compute_rendering()
+  class game_logs
+  {
+    constructor()
     {
-      map_rendered.width = map_width ;
-      map_rendered.height = map_height ;
-      map_rendered_ctx = map_rendered.getContext("2d");
+      console.log("construct");
+      this.bigballRadius = 10;
+      this.vmax = 250;
+      this.smallballRadius = 3;
+      this.alive = true;
+      this.personalX = 0 ;
+      this.vx ;
+      this.personalY = 0 ;
+      this.vy ;
+      this.v0 = Math.sqrt(Math.pow(this.vx,2) + Math.pow(this.vy,2) ) ;
+      this.score_red = 0;
+      this.score_blue = 0;
+      this.id = -1 ;
+      this.client_players = {} ;
+      this.client_bullets = {} ;
+      this.client_color = {} ;
+      this.client_bonus = {} ;
+      this.team_colors = {'red' : '#ff0000', 'blue' : '#0000ff'} ;
+      this.map;
+      this.map_width;
+      this.map_height;
+    }
 
+    authentification(dict)
+    {
+      console.log("authentif");
+      this.id =  dict["id"];
+      this.alive = true ;
+      this.map_width = dict["map_width"] ;
+      this.map_height = dict["map_height"] ;
+      this.compute_rendering();
+    }
+
+    compute_rendering()
+    {
+      map_rendered.width = this.map_width ;
+      map_rendered.height = this.map_height ;
+      map_rendered_ctx = map_rendered.getContext("2d");
       // contour de la map
       map_rendered_ctx.beginPath()
       map_rendered_ctx.fillStyle = "#ff0000";
-      map_rendered_ctx.moveTo(0,0); map_rendered_ctx.lineTo(map_width,0);
-      map_rendered_ctx.lineTo(map_width, map_height);
-      map_rendered_ctx.lineTo(0, map_height);
+      map_rendered_ctx.moveTo(0,0);
+      map_rendered_ctx.lineTo(map_rendered.width,0);
+      map_rendered_ctx.lineTo(map_rendered.width, map_rendered.height);
+      map_rendered_ctx.lineTo(0, map_rendered.height);
       map_rendered_ctx.stroke() ;
-
       // quadrillage
-      for (var nx = 0; nx < Math.floor(map_width/quadspace)+1; nx += 1){
+      for (var nx = 0; nx < Math.floor(map_rendered.width/quadspace)+1; nx += 1){
         map_rendered_ctx.beginPath();
         map_rendered_ctx.rect(nx*quadspace,0, quadwidth, map_rendered.width);
         map_rendered_ctx.fillStyle = "#9E9E9E";
         map_rendered_ctx.fill();
         map_rendered_ctx.closePath();
       }
-      for (var ny = 0; ny < Math.floor(map_width/quadspace);ny += 1){
+      for (var ny = 0; ny < Math.floor(map_rendered.width/quadspace);ny += 1){
         map_rendered_ctx.beginPath();
         map_rendered_ctx.rect(0,ny*quadspace, map_rendered.width, quadwidth);
         map_rendered_ctx.fillStyle = "#9E9E9E";
         map_rendered_ctx.fill();
         map_rendered_ctx.closePath();
       }
-      // map
-      // for (var x = 0; x < map_height; x += 1){
-      //   for (var y = 0; y < map_width; y += 1){
-      //     if (map[x][y] == true) {
-      //       map_rendered_ctx.beginPath();
-      //       map_rendered_ctx.rect(y,x, 1, 1);
-      //       map_rendered_ctx.fillStyle = "#00000";
-      //       map_rendered_ctx.fill();
-      //       map_rendered_ctx.closePath();
-      //     }
-      //   }
-      //}
-
       var back = document.getElementById('background');
       map_rendered_ctx.drawImage(back,0,0);
-
-
     }
 
-socket.on('authentification',function(dict)
-{
-  id =  dict["id"];
-  alive = true ;
-  map_width = dict["map_width"] ; map_height = dict["map_height"] ;
-  console.log(map_width);
-  console.log(map_height);
-  compute_rendering();
-  console.log(id);
-
-});
-
-socket.on('update',function(game)
-{
-  created = true;
-  drawing = true;
-  client_players = game["players"] ;
-  client_bullets = game["bullets"] ;
-  client_bonus = game["bonus"] ;
-  personalX = client_players[id]["x"] ;
-  personalY = client_players[id]["y"];
-  personalPseudo = client_players[id]["pseudo"];
-});
-
-
-
-document.addEventListener("mousemove", mouseMoveHandler, false);
-document.addEventListener("keydown", keyDownHandler, false);
-document.addEventListener("keyup", keyUpHandler, false);
-
-
-function mouseMoveHandler(e)
-{
-  if (alive && id != -1)
-  {
-    relativeX = e.clientX + window.pageXOffset;
-    relativeY = e.clientY + window.pageYOffset;
-    vx = relativeX - width/2 ;
-    vy = relativeY - height/2 ;
-    v0 = Math.sqrt(Math.pow(vx,2) + Math.pow(vy,2) );
-
-    if (v0 > vmax)
+    update(game)
     {
-      vx = vx*vmax/v0 ;
-      vy = vy*vmax/v0 ;
-      v0 = vmax ;
+      console.log("update");
+      drawing = true;
+      this.client_players = game["players"] ;
+      this.client_bullets = game["bullets"] ;
+      this.client_bonus = game["bonus"] ;
+      this.personalX = this.client_players[this.id]["x"] ;
+      this.personalY = this.client_players[this.id]["y"];
+      this.personalPseudo = this.client_players[this.id]["pseudo"];
+    }
+    score_update(scores){
+      console.log("AHAHA");
+      this.score_red = scores['score_red'];
+      this.score_blue = scores['score_blue'];
     }
 
-    socket.emit('client_speed_update', id, vx, vy ) ;
-  }
-}
+    death(ID)
+    {
+      console.log("death");
+      if (ID == this.id)
+      {
+        this.alive = false ;
+        socket.emit('logout');
+      }
+    }
+    mouseMoveHandler(e)
+    {
+      console.log("AHAHA");
+      if (this.alive)
+      {
+        this.relativeX = e.clientX + window.pageXOffset;
+        this.relativeY = e.clientY + window.pageYOffset;
+        this.vx = this.relativeX - canvas_width/2 ;
+        this.vy = this.relativeY - canvas_height/2 ;
+        this.v0 = Math.sqrt(Math.pow(this.vx,2) + Math.pow(this.vy,2) );
 
-function keyDownHandler(e){
-  if(e.keyCode == 32 && once && alive)
+        if (this.v0 > this.vmax)
+        {
+          this.vx = this.vx*this.vmax/this.v0 ;
+          this.vy = this.vy*this.vmax/this.v0 ;
+          this.v0 = this.vmax ;
+        }
+        socket.emit('client_speed_update', this.id, this.vx, this.vy ) ;
+      }
+    }
+    keyDownHandler(e){
+      console.log("AHAHA");
+      if(e.keyCode == 32 && once && this.alive)
+      {
+        spacePressed = true;
+        once = false;
+        socket.emit('client_shoot', this.id,(this.vx*this.vmax)/this.v0, (this.vy*this.vmax)/this.v0);
+      }
+    }
+    keyUpHandler(e){
+      console.log("AHAHA");
+      if(e.keyCode == 32 && this.alive)
+      {
+        spacePressed = false;
+        once = true;
+      }
+    }
+  }
+
+  class ball
   {
-    spacePressed = true;
-    once = false;
-    socket.emit('client_shoot', id,(vx*vmax)/v0, (vy*vmax)/v0);
-  }
-}
+    constructor(x,y,r,color)
+    {
+      this.x = x;
+      this.y = y;
+      this.rayon = r;
+      this.nbaby = [];
+      this.color = color;
+    }
 
-function keyUpHandler(e){
-  if(e.keyCode == 32 && alive)
-  {
-    spacePressed = false;
-    once = true;
-  }
-}
-
-class ball
-{
-  constructor(x,y,r,color)
-  {
-    this.x = x;
-    this.y = y;
-    this.rayon = r;
-    this.nbaby = [];
-    this.color = color;
+    drawBall()
+    {
+      players_ctx.beginPath();
+      players_ctx.arc(this.x, this.y, this.rayon, 0, 2*Math.PI);
+      players_ctx.fillStyle = this.color;
+      players_ctx.fill();
+      players_ctx.closePath();
+    }
   }
 
-  drawBall()
-  {
-    players_ctx.beginPath();
-    players_ctx.arc(this.x, this.y, this.rayon, 0, 2*Math.PI);
-    players_ctx.fillStyle = this.color;
-    players_ctx.fill();
-    players_ctx.closePath();
-  }
-}
+// Socket_IO functions
 
-function draw()
+socket.on('connect', function(){
+  socket.emit('new_connection');
+});
+
+socket.on('dead',function(ID){
+  game_logs_session.death(ID);
+});
+
+socket.on('score_update',function(scores){
+  game_logs_session.score_update(scores);
+});
+
+socket.on('authentification',function(dict){
+  game_logs_session.authentification(dict);
+});
+
+socket.on('update',function(game){
+  game_logs_session.update(game);
+});
+
+document.addEventListener("mousemove", function(e){game_logs_session.mouseMoveHandler(e);}, false);
+document.addEventListener("keydown", function(e){game_logs_session.keyDownHandler(e);}, false);
+document.addEventListener("keyup", function(e){game_logs_session.keyUpHandler(e);}, false);
+
+
+
+
+function draw(logs)
 {
 
   if (drawing)
   {
 
     map_ctx.clearRect(0, 0, map_canvas.width, map_canvas.height);
-    map_ctx.drawImage( map_rendered, width/2 - personalX, height/2 - personalY );
+    map_ctx.drawImage( map_rendered, canvas_width/2 - logs.personalX, canvas_height/2 - logs.personalY );
   }
 
   socket.emit('request_frame');
@@ -252,56 +258,55 @@ function draw()
   {
     players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
 
-    for (var id_players in client_players)
+    for (var id_players in logs.client_players)
     {
       id_players = Number(id_players);
-      var x = client_players[id_players]["x"];
-      var y = client_players[id_players]["y"];
-      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
+      var x = logs.client_players[id_players]["x"];
+      var y = logs.client_players[id_players]["y"];
+      if (Math.abs(x-logs.personalX) <= canvas_width/2 && Math.abs(y-logs.personalY) <= canvas_height/2 )
       {
-        let B = new ball(x - personalX + width/2, y - personalY + height/2,
-          client_players[id_players]["r"], team_colors[client_players[id_players]["team"]]);
-        B.drawBall();
-        drawPseudo(client_players[id_players]["pseudo"], x - personalX + width/2, y - personalY + height/2-20);
-        drawMiniMap();
-        drawScore();
-        drawTeamScores();
-              if (id != -1 && created)
+        let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
+          logs.client_players[id_players]["r"], logs.team_colors[logs.client_players[id_players]["team"]]);
+          B.drawBall();
+          drawWidgets(logs,id_players);
+          if (logs.id != -1 )
+          {
+            drawLife(logs.client_players[logs.id]["r"]);
+          }
+        }
+      }
+      for (var id_bullets in logs.client_bullets)
       {
-          drawLife(client_players[id]["r"]);
+        id_bullets = Number(id_bullets);
+        var x = logs.client_bullets[id_bullets]["x"];
+        var y = logs.client_bullets[id_bullets]["y"];
+        if (Math.abs(x-logs.personalX) <= canvas_width/2 && Math.abs(y-logs.personalY) <= canvas_height/2 )
+        {
+          let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
+            logs.smallballRadius, logs.team_colors[logs.client_bullets[id_bullets]["team"]]);
+            B.drawBall();
+          }
+        }
+        for (var id_bonus in logs.client_bonus)
+        {
+          id_bonus = Number(id_bonus);
+          bonus_skin = document.getElementById(logs.client_bonus[id_bonus]["type"]);
+          map_ctx.drawImage(bonus_skin,
+            logs.client_bonus[id_bonus]["x"] - logs.personalX + canvas_width/2-bonus_width/2,
+            logs.client_bonus[id_bonus]["y"] - logs.personalY + canvas_height/2-bonus_height/2,
+            bonus_width, bonus_height ) ;
+          }
+        }
+        drawing = false;
+        requestAnimationFrame(function(){
+          draw(logs);
+        });
       }
-      }
-    }
-    for (var id_bullets in client_bullets)
-    {
-      id_bullets = Number(id_bullets);
-      var x = client_bullets[id_bullets]["x"];
-      var y = client_bullets[id_bullets]["y"];
-      if (Math.abs(x-personalX) <= width/2 && Math.abs(y-personalY) <= height/2 )
-      {
-        let B = new ball(x - personalX + width/2, y - personalY + height/2,
-           smallballRadius, team_colors[client_bullets[id_bullets]["team"]]);
-        B.drawBall();
-      }
-    }
-    for (var id_bonus in client_bonus)
-    {
-      id_bonus = Number(id_bonus);
-      bonus_skin = document.getElementById(client_bonus[id_bonus]["type"]);
-      map_ctx.drawImage(bonus_skin,
-         client_bonus[id_bonus]["x"] - personalX + width/2-bonus_width/2,
-          client_bonus[id_bonus]["y"] - personalY + height/2-bonus_height/2,
-        bonus_width, bonus_height ) ;
-    }
-  }
-  drawing = false;
-  requestAnimationFrame(draw);
-}
 
+      var game_logs_session = new game_logs();
+      draw(game_logs_session);
 
-draw();
+    </script>
 
-</script>
-
-</body>
-</html>
+  </body>
+  </html>

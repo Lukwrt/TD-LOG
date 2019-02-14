@@ -17,22 +17,16 @@
     <img id="grid" src = "{{ url_for('static', filename='grid.png') }}">
     <img id="heal" src = "{{ url_for('static', filename='heal.png') }}" >
     <img id="boost" src = "{{ url_for('static', filename='boost.png') }}" >
-
-
   </div>
 
   <canvas id="map" ></canvas>
   <canvas id="players"></canvas>
   <script type="text/javascript" src = "https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.4.8/socket.io.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
-
   <script src="{{ url_for('static', filename='Players_interface.js') }}" rel="stylesheet" type="text/javascript" /></script>
-
   <script>
 
-
   // Canvas parameters :
-
   var map_canvas = document.getElementById("map");
   var map_ctx = map_canvas.getContext("2d");
   var map_rendered = document.createElement("canvas");
@@ -58,8 +52,9 @@
   var bonus_height = 40;
   var socket = io.connect('http://127.0.0.1:5000');
 
-
-  class game_infos{
+  // Game parameters class
+  class game_infos
+  {
 
     constructor(){
       this.bigballRadius = 10;
@@ -182,6 +177,7 @@
     }
   }
 
+  // Ball class for each socket
   class ball
   {
     constructor(x,y,r,color){
@@ -203,100 +199,35 @@
 
 // Socket_IO functions
 
-socket.on('connect', function(){
-  socket.emit('new_connection');
-});
+  socket.on('connect', function(){
+    socket.emit('new_connection');
+  });
 
-socket.on('dead',function(ID){
-  game_infos_session.death(ID);
-});
+  socket.on('dead',function(ID){
+    game_infos_session.death(ID);
+  });
 
-socket.on('score_update',function(scores){
-  game_infos_session.score_update(scores);
-});
+  socket.on('score_update',function(scores){
+    game_infos_session.score_update(scores);
+  });
 
-socket.on('authentification',function(dict){
-  game_infos_session.authentification(dict);
-});
+  socket.on('authentification',function(dict){
+    game_infos_session.authentification(dict);
+  });
 
-socket.on('update',function(game){
-  game_infos_session.update(game);
-});
+  socket.on('update',function(game){
+    game_infos_session.update(game);
+  });
 
-document.addEventListener("mousemove", function(e){game_infos_session.mouseMoveHandler(e);}, false);
-document.addEventListener("keydown", function(e){game_infos_session.keyDownHandler(e);}, false);
-document.addEventListener("keyup", function(e){game_infos_session.keyUpHandler(e);}, false);
+// Adding listener for moving
+  document.addEventListener("mousemove", function(e){game_infos_session.mouseMoveHandler(e);}, false);
+  document.addEventListener("keydown", function(e){game_infos_session.keyDownHandler(e);}, false);
+  document.addEventListener("keyup", function(e){game_infos_session.keyUpHandler(e);}, false);
 
-
-function draw(logs)
-{
-
-  if (drawing)
-  {
-
-    map_ctx.clearRect(0, 0, map_canvas.width, map_canvas.height);
-    map_ctx.drawImage( map_rendered, canvas_width/2 - logs.personalX, canvas_height/2 - logs.personalY );
-  }
-
-  socket.emit('request_frame');
-
-  if (drawing)
-  {
-    players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
-    if (logs.id != -1)
-    {
-    drawWidgets(logs);
-    }
-    for (var id_players in logs.client_players)
-    {
-      id_players = Number(id_players);
-      var x = logs.client_players[id_players]["x"];
-      var y = logs.client_players[id_players]["y"];
-      if (Math.abs(x-logs.personalX) <= canvas_width/2 && Math.abs(y-logs.personalY) <= canvas_height/2 )
-      {
-        let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
-          logs.client_players[id_players]["r"], logs.team_colors[logs.client_players[id_players]["team"]]);
-          B.drawBall();
-
-          if (logs.id != -1 )
-          {
-            drawPseudo(logs,id_players);
-            
-          }
-        }
-      }
-      for (var id_bullets in logs.client_bullets)
-      {
-        id_bullets = Number(id_bullets);
-        var x = logs.client_bullets[id_bullets]["x"];
-        var y = logs.client_bullets[id_bullets]["y"];
-        if (Math.abs(x-logs.personalX) <= canvas_width/2 && Math.abs(y-logs.personalY) <= canvas_height/2 )
-          {
-          let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
-            logs.smallballRadius, logs.team_colors[logs.client_bullets[id_bullets]["team"]]);
-            B.drawBall();
-          }
-      }
-        for (var id_bonus in logs.client_bonus)
-        {
-          id_bonus = Number(id_bonus);
-          bonus_skin = document.getElementById(logs.client_bonus[id_bonus]["type"]);
-          map_ctx.drawImage(bonus_skin,
-            logs.client_bonus[id_bonus]["x"] - logs.personalX + canvas_width/2-bonus_width/2,
-            logs.client_bonus[id_bonus]["y"] - logs.personalY + canvas_height/2-bonus_height/2,
-            bonus_width, bonus_height ) ;
-        }
-      }
-        drawing = false;
-        requestAnimationFrame(function(){
-          draw(logs);
-        });
-      }
-
-      var game_infos_session = new game_infos();
-      draw(game_infos_session);
-
-    </script>
+// Main script :
+  var game_infos_session = new game_infos(); // Creating a game session
+  draw(game_infos_session); // drawing the session again and again.
+  </script>
 
   </body>
   </html>

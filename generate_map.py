@@ -159,31 +159,22 @@ def load_map (filename, bw = 4, b = 5):
         return n_x, n_y
     return map, width, height, inner_slide
 
-if __name__ == "__main__":
-    # new_img, width, height = file_to_map("../maps/test_img2.png")
-<<<<<<< HEAD:ASSOS.io/generate_map.py
-    new_img, width, height = file_to_map("../maps/map_alpha.png")
-=======
-    new_img, width, height = file_to_map("./maps/map_alpha.png")
->>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:generate_map.py
-
-    contours = get_contour(new_img)
-    c_map = np.zeros((height, width))
-    new_img = new_img.astype(int)
-
-    tanj_map = compute_tangeante(new_img, contours, bw=2)
-    near_contour_map = compute_nearest_border(new_img, contours, b=3)
-
-    lw = 4
-    for c in contours:
-        for k in range(len(c)):
-            new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = 10*(k+2)/len(c)
-    # p
-    # p.pprint(near_contour_map[40:60,80:100])
-    # pp.pprint(tanj_map[40:60,80:100])
-
-<<<<<<< HEAD:ASSOS.io/generate_map.py
-    print_map(new_img)
-=======
-    print_map(new_img)
->>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:generate_map.py
+# if __name__ == "__main__":
+#
+#     new_img, width, height = file_to_map("./maps/map_alpha.png")
+#     contours = get_contour(new_img)
+#     c_map = np.zeros((height, width))
+#     new_img = new_img.astype(int)
+#
+#     tanj_map = compute_tangeante(new_img, contours, bw=2)
+#     near_contour_map = compute_nearest_border(new_img, contours, b=3)
+#
+#     lw = 4
+#     for c in contours:
+#         for k in range(len(c)):
+#             new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = 10*(k+2)/len(c)
+#     # p
+#     # p.pprint(near_contour_map[40:60,80:100])
+#     # pp.pprint(tanj_map[40:60,80:100])
+#
+#     print_map(new_img)

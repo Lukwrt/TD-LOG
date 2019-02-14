@@ -63,7 +63,7 @@
 
     constructor(){
       this.bigballRadius = 10;
-      this.vmax = 250;
+      this.vmax = 200;
       this.smallballRadius = 3;
       this.alive = true;
       this.personalX = 0 ;
@@ -267,12 +267,12 @@ function draw(logs)
         var x = logs.client_bullets[id_bullets]["x"];
         var y = logs.client_bullets[id_bullets]["y"];
         if (Math.abs(x-logs.personalX) <= canvas_width/2 && Math.abs(y-logs.personalY) <= canvas_height/2 )
-        {
+          {
           let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
             logs.smallballRadius, logs.team_colors[logs.client_bullets[id_bullets]["team"]]);
             B.drawBall();
           }
-        }
+      }
         for (var id_bonus in logs.client_bonus)
         {
           id_bonus = Number(id_bonus);
@@ -281,8 +281,8 @@ function draw(logs)
             logs.client_bonus[id_bonus]["x"] - logs.personalX + canvas_width/2-bonus_width/2,
             logs.client_bonus[id_bonus]["y"] - logs.personalY + canvas_height/2-bonus_height/2,
             bonus_width, bonus_height ) ;
-          }
         }
+      }
         drawing = false;
         requestAnimationFrame(function(){
           draw(logs);

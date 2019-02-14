@@ -1,5 +1,6 @@
 // function drawing the life of the player in function of the radius of his ball
-function drawLife(rayon){
+function drawLife(rayon)
+{
   // h,v the x,y coordinates of the center of the life bar
   var h = 100;
   var v = 100;
@@ -50,7 +51,8 @@ function drawLife(rayon){
 }
 
 // function drawing the ennemies positions on the minimap, (x,y) ennemy position, (w,h) position of the top left corner of the minimap
-function drawPixel(x,y,w,h,color){
+function drawPixel(x,y,w,h,color)
+{
   // calculating the position on the minimap in function of the compressing rate of the minimap ( here 159/1327)
   var x_p = w + x*149/819;
   var y_p = h + y*148/818;
@@ -64,7 +66,7 @@ function drawPixel(x,y,w,h,color){
 }
 
 // drawing the minimap
-function drawMiniMap(){
+function drawMiniMap(logs){
   //(x,y) position of the top left corner of the minimap
   var x = players_canvas.width-170;
   var y = players_canvas.height-170;
@@ -96,37 +98,40 @@ function drawMiniMap(){
 
 
   // drawing the players on the minimap
-  for (var id_players in client_players){
-    if (id_players != id){
+  for (var id_players in logs.client_players){
+    if (id_players != logs.id){
       // enemies in red
-      if(client_players[id_players]["team"] == client_players[id]["team"]){
-        drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y,"#01DF01");
+      if(logs.client_players[id_players]["team"] == logs.client_players[logs.id]["team"]){
+        drawPixel(logs.client_players[id_players]["x"],logs.client_players[id_players]["y"],x,y,"#01DF01");
       }
       // allies in green
       else{
-        drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y,"#FF0000");
+        drawPixel(logs.client_players[id_players]["x"],logs.client_players[id_players]["y"],x,y,"#FF0000");
       }
     }
     // player himself in blue
     else{
-      drawPixel(client_players[id_players]["x"],client_players[id_players]["y"],x,y,"#0000FF");
+      drawPixel(logs.client_players[id_players]["x"],logs.client_players[id_players]["y"],x,y,"#0000FF");
     }
   }
 }
 
 //function writing the pseudo of the players near their ball, (x,y) position of the ennemy on the canvas
-function drawPseudo(pseudo,x,y)
+function drawPseudo(logs,id_players)
 {
+  var pseudo = logs.client_players[id_players]["pseudo"];
+  var x_ = logs.client_players[id_players]["x"] - logs.personalX + canvas_width/2;
+  var y_ = logs.client_players[id_players]["y"] - logs.personalY + canvas_height/2-20;
+
   players_ctx.beginPath();
   players_ctx.font = "20px Arial";
   players_ctx.fillStyle = "#da6210";
-  players_ctx.fillText(pseudo,x,y);
+  players_ctx.fillText(pseudo,x_,y_);
   players_ctx.closePath();
-
 }
 
 //function writing the 3 best scores
-function drawScore()
+function drawScore(logs)
 {
   // (x,y) positon on the canvas
   var x = 50;
@@ -136,14 +141,20 @@ function drawScore()
   var best_score =[-1,-1,-1];
 
   // calculating the 3 best score and updating the table id_best_score which contains the id of the 3 best players
-  for (var idp in client_players)
+  for (var idp in logs.client_players)
   {
+<<<<<<< HEAD:ASSOS.io/static/Players_interface.js
     if(client_players[idp]["score"]>best_score[0]){
+=======
+    if( logs.client_players[idp]["score"] > best_score[0] )
+    {
+>>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:static/Players_interface.js
       id_best_score[2] = id_best_score[1];
       best_score[2] = best_score[1];
       id_best_score[1] = id_best_score[0];
       best_score[1] = best_score[0];
       id_best_score[0] = idp;
+<<<<<<< HEAD:ASSOS.io/static/Players_interface.js
       best_score[0] = client_players[idp]["score"];
 
     }
@@ -156,6 +167,20 @@ function drawScore()
     else if(client_players[idp]["score"]>best_score[2]){
       id_best_score[2] = idp;
       best_score[2] = client_players[idp]["score"];
+=======
+      best_score[0] = logs.client_players[idp]["score"];
+
+    }
+    else if(logs.client_players[idp]["score"]>best_score[1]){
+      id_best_score[2] = id_best_score[1];
+      best_score[2] = best_score[1];
+      id_best_score[1] = idp;
+      best_score[1] = logs.client_players[idp]["score"];
+    }
+    else if(logs.client_players[idp]["score"]>best_score[2]){
+      id_best_score[2] = idp;
+      best_score[2] = logs.client_players[idp]["score"];
+>>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:static/Players_interface.js
     }
   }
 
@@ -172,9 +197,15 @@ function drawScore()
   {
     if(id_best_score[idp] != -1){
       //score of the player
+<<<<<<< HEAD:ASSOS.io/static/Players_interface.js
       var sc = client_players[id_best_score[idp]]["score"];
       // string we want to write
       var s = client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
+=======
+      var sc = logs.client_players[id_best_score[idp]]["score"];
+      // string we want to write
+      var s = logs.client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
+>>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:static/Players_interface.js
 
       // wrting the score on the canvas
       players_ctx.beginPath();
@@ -188,19 +219,19 @@ function drawScore()
   }
 }
 
-function drawTeamScores(){
+function drawTeamScores(logs){
   var x = players_canvas.width/2 - 150;
   var y = 40;
   var sc_allies;
   var sc_ennemies;
 
-  if(client_players[id]["team"] == "blue"){
-    sc_allies = score_blue;
-    sc_ennemies = score_red;
+  if(logs.client_players[logs.id]["team"] == "blue"){
+    sc_allies = logs.score_blue;
+    sc_ennemies = logs.score_red;
   }
   else{
-    sc_allies = score_red;
-    sc_ennemies = score_blue;
+    sc_allies = logs.score_red;
+    sc_ennemies = logs.score_blue;
   }
   var rate;
   if(sc_allies + sc_ennemies == 0){
@@ -240,4 +271,12 @@ function drawTeamScores(){
   players_ctx.fillText(sc_ennemies.toString(),x+400+25,y+30);
   players_ctx.closePath();
 
+}
+
+function drawWidgets(logs,id_players)
+{
+  drawPseudo(logs,id_players);
+  drawMiniMap(logs);
+  drawScore(logs);
+  drawTeamScores(logs);
 }

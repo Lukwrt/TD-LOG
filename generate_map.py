@@ -158,9 +158,14 @@ def load_map (filename, bw = 4, b = 5):
 
         return n_x, n_y
     return map, width, height, inner_slide
+
 if __name__ == "__main__":
     # new_img, width, height = file_to_map("../maps/test_img2.png")
+<<<<<<< HEAD:ASSOS.io/generate_map.py
     new_img, width, height = file_to_map("../maps/map_alpha.png")
+=======
+    new_img, width, height = file_to_map("./maps/map_alpha.png")
+>>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:generate_map.py
 
     contours = get_contour(new_img)
     c_map = np.zeros((height, width))
@@ -177,4 +182,8 @@ if __name__ == "__main__":
     # p.pprint(near_contour_map[40:60,80:100])
     # pp.pprint(tanj_map[40:60,80:100])
 
+<<<<<<< HEAD:ASSOS.io/generate_map.py
     print_map(new_img)
+=======
+    print_map(new_img)
+>>>>>>> f86aa21e0d5cc8cac739f5846c820391f7b51551:generate_map.py

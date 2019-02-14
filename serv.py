@@ -7,7 +7,7 @@ import time as time
 from math import *
 from generate_map import *
 
-map, map_width, map_height, inner_slide = load_map("../maps/map_alpha.png")
+map, map_width, map_height, inner_slide = load_map("./static/map_alpha.png")
 app = Flask(__name__)
 
 app.config['SECRET_KEY'] = 'secret'

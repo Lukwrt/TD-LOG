@@ -158,31 +158,32 @@ def load_map (filename, bw = 4, b = 5):
 
         return n_x, n_y
     return map, width, height, inner_slide
-if __name__ == "__main__":
-    # new_img, width, height = file_to_map("../maps/test_img2.png")
-    new_img, width, height = file_to_map("../maps/contour_test2.png")
 
-    contours = get_contour(new_img)
-    c_map = np.zeros((height, width))
-    new_img = new_img.astype(int)
-
-    tanj_map = compute_tangeante(new_img, contours, bw=2)
-    near_contour_map = compute_nearest_border(new_img, contours, b=3)
-
-    lw = 1
-    for c in contours:
-        for k in range(len(c)):
-            new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = k + 40
-    # pp.pprint(near_contour_map[40:60,80:100])
-    # pp.pprint(tanj_map[40:60,80:100])
-
-    x, y, x_, y_ = 58,31,69,41
-    new_img[x, y] = -100
-    new_img[x_, y_] = 100
-
-    n_x, n_y = slide(x, y, x_, y_, near_contour_map, tanj_map, contours)
-    print(n_x, n_y)
-    new_img[n_x, n_y] = -200
-    new_img[60,31] = -200
-
-    print_map(new_img)
+# if __name__ == "__main__":
+#     # new_img, width, height = file_to_map("../maps/test_img2.png")
+#     new_img, width, height = file_to_map("../maps/contour_test2.png")
+#
+#     contours = get_contour(new_img)
+#     c_map = np.zeros((height, width))
+#     new_img = new_img.astype(int)
+#
+#     tanj_map = compute_tangeante(new_img, contours, bw=2)
+#     near_contour_map = compute_nearest_border(new_img, contours, b=3)
+#
+#     lw = 1
+#     for c in contours:
+#         for k in range(len(c)):
+#             new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = k + 40
+#     # pp.pprint(near_contour_map[40:60,80:100])
+#     # pp.pprint(tanj_map[40:60,80:100])
+#
+#     x, y, x_, y_ = 58,31,69,41
+#     new_img[x, y] = -100
+#     new_img[x_, y_] = 100
+#
+#     n_x, n_y = slide(x, y, x_, y_, near_contour_map, tanj_map, contours)
+#     print(n_x, n_y)
+#     new_img[n_x, n_y] = -200
+#     new_img[60,31] = -200
+#
+#     print_map(new_img)

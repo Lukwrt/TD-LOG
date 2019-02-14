@@ -58,19 +58,18 @@
   var bonus_height = 40;
   var socket = io.connect('http://127.0.0.1:5000');
 
-  class game_logs
-  {
-    constructor()
-    {
-      console.log("construct");
+
+  class game_infos{
+
+    constructor(){
       this.bigballRadius = 10;
-      this.vmax = 250;
+      this.vmax = 10;
       this.smallballRadius = 3;
       this.alive = true;
       this.personalX = 0 ;
-      this.vx ;
+      this.vx;
       this.personalY = 0 ;
-      this.vy ;
+      this.vy;
       this.v0 = Math.sqrt(Math.pow(this.vx,2) + Math.pow(this.vy,2) ) ;
       this.score_red = 0;
       this.score_blue = 0;
@@ -80,14 +79,11 @@
       this.client_color = {} ;
       this.client_bonus = {} ;
       this.team_colors = {'red' : '#ff0000', 'blue' : '#0000ff'} ;
-      this.map;
       this.map_width;
       this.map_height;
     }
 
-    authentification(dict)
-    {
-      console.log("authentif");
+    authentification(dict){
       this.id =  dict["id"];
       this.alive = true ;
       this.map_width = dict["map_width"] ;
@@ -95,8 +91,7 @@
       this.compute_rendering();
     }
 
-    compute_rendering()
-    {
+    compute_rendering(){
       map_rendered.width = this.map_width ;
       map_rendered.height = this.map_height ;
       map_rendered_ctx = map_rendered.getContext("2d");
@@ -127,9 +122,7 @@
       map_rendered_ctx.drawImage(back,0,0);
     }
 
-    update(game)
-    {
-      console.log("update");
+    update(game){
       drawing = true;
       this.client_players = game["players"] ;
       this.client_bullets = game["bullets"] ;
@@ -138,24 +131,21 @@
       this.personalY = this.client_players[this.id]["y"];
       this.personalPseudo = this.client_players[this.id]["pseudo"];
     }
+
     score_update(scores){
-      console.log("AHAHA");
       this.score_red = scores['score_red'];
       this.score_blue = scores['score_blue'];
     }
 
-    death(ID)
-    {
-      console.log("death");
+    death(ID){
       if (ID == this.id)
       {
         this.alive = false ;
         socket.emit('logout');
       }
     }
-    mouseMoveHandler(e)
-    {
-      console.log("AHAHA");
+
+    mouseMoveHandler(e){
       if (this.alive)
       {
         this.relativeX = e.clientX + window.pageXOffset;
@@ -173,8 +163,8 @@
         socket.emit('client_speed_update', this.id, this.vx, this.vy ) ;
       }
     }
+
     keyDownHandler(e){
-      console.log("AHAHA");
       if(e.keyCode == 32 && once && this.alive)
       {
         spacePressed = true;
@@ -182,8 +172,8 @@
         socket.emit('client_shoot', this.id,(this.vx*this.vmax)/this.v0, (this.vy*this.vmax)/this.v0);
       }
     }
+
     keyUpHandler(e){
-      console.log("AHAHA");
       if(e.keyCode == 32 && this.alive)
       {
         spacePressed = false;
@@ -194,8 +184,7 @@
 
   class ball
   {
-    constructor(x,y,r,color)
-    {
+    constructor(x,y,r,color){
       this.x = x;
       this.y = y;
       this.rayon = r;
@@ -203,8 +192,7 @@
       this.color = color;
     }
 
-    drawBall()
-    {
+    drawBall(){
       players_ctx.beginPath();
       players_ctx.arc(this.x, this.y, this.rayon, 0, 2*Math.PI);
       players_ctx.fillStyle = this.color;
@@ -220,26 +208,24 @@ socket.on('connect', function(){
 });
 
 socket.on('dead',function(ID){
-  game_logs_session.death(ID);
+  game_infos_session.death(ID);
 });
 
 socket.on('score_update',function(scores){
-  game_logs_session.score_update(scores);
+  game_infos_session.score_update(scores);
 });
 
 socket.on('authentification',function(dict){
-  game_logs_session.authentification(dict);
+  game_infos_session.authentification(dict);
 });
 
 socket.on('update',function(game){
-  game_logs_session.update(game);
+  game_infos_session.update(game);
 });
 
-document.addEventListener("mousemove", function(e){game_logs_session.mouseMoveHandler(e);}, false);
-document.addEventListener("keydown", function(e){game_logs_session.keyDownHandler(e);}, false);
-document.addEventListener("keyup", function(e){game_logs_session.keyUpHandler(e);}, false);
-
-
+document.addEventListener("mousemove", function(e){game_infos_session.mouseMoveHandler(e);}, false);
+document.addEventListener("keydown", function(e){game_infos_session.keyDownHandler(e);}, false);
+document.addEventListener("keyup", function(e){game_infos_session.keyUpHandler(e);}, false);
 
 
 function draw(logs)
@@ -303,8 +289,8 @@ function draw(logs)
         });
       }
 
-      var game_logs_session = new game_logs();
-      draw(game_logs_session);
+      var game_infos_session = new game_infos();
+      draw(game_infos_session);
 
     </script>
 

@@ -65,6 +65,15 @@ class game(bonus):
                           "team": self.players[id]["team"],
                           "player_id": id}
 
+    def test_handle_shot(self,id, vx, vy):
+        assert type(id)==int, "wrong id"
+        bullet_id = generate_valid_id(self.bullets)
+        self.bullets[bullet_id] = {"x": self.players[id]["x"], "y": self.players[id]["y"],
+                          "vx": vx, "vy": vy,
+                          "team": self.players[id]["team"],
+                          "player_id": id}
+        return bullet_id
+
     def handle_new_connect(self):
         id = generate_valid_id(self.players)
         team_ = self.select_team()
@@ -194,6 +203,15 @@ class game(bonus):
             topop.append(id)
 
     def death(self,idp,id,topop):
+        '''
+        >>> g = game()
+        >>> idp = g.test_create_id()
+        >>> id = g.test_handle_shot(idp,2,2)
+        >>> old_score = g.teams[g.players[g.bullets[id]["player_id"]]["team"]]["score"]
+        >>> g.death(432929229,id,[4562626])
+        >>> g.teams[g.players[g.bullets[id]["player_id"]]["team"]]["score"] == old_score + 1
+        True
+        '''
         assert idp not in topop, "player already dead"
         topop.append(idp)
         self.teams[self.players[self.bullets[id]["player_id"]]["team"]]["score"] += 1

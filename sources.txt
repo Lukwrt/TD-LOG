@@ -1,4 +1,0 @@
-https://socket.io/get-started/chat/
-
-Page tutorielle pour l'utilisation de socket.io
-

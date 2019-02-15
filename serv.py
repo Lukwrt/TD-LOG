@@ -209,12 +209,47 @@ class game(bonus):
             topop.append(id_bonus)
 
     def update_bullet(self,id,topop):
+<<<<<<< HEAD
         """
         fait évoluer la position de la balle identifié par id
         si la balle rencontre un élément (joueur, obstacle) elle disparait et est ajouté à topop
         """
         assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
         assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
+=======
+        '''
+        >>> g = game()
+        >>> idp = g.test_create_id()
+        >>> id = g.test_handle_shot(idp,25,25)
+        >>> g.update_bullet(id,[-1])
+        >>> 0 <= g.bullets[id]["x"] <= map_width
+        True
+        >>> 0 <= g.bullets[id]["y"] <= map_height
+        True
+        >>> new_x = g.bullets[id]["x"] + g.bullets[id]["vx"] * (server_clock - last_update) * g.bullet_speed
+        >>> new_y = g.bullets[id]["y"] + g.bullets[id]["vy"] * (server_clock - last_update) * g.bullet_speed
+        >>> g.bullets[id]["x"] == new_x
+        True
+        >>> g.bullets[id]["y"] == new_y
+        True
+        '''
+
+        '''
+        >>> g = game()
+        >>> idp = g.test_create_id()
+        >>> id = g.test_handle_shot(idp,0,0)
+        >>> topop =[-1]
+        >>> g.update_bullet(id,topop)
+        >>> new_x = g.bullets[id]["x"] + g.bullets[id]["vx"] * (server_clock - last_update) * g.bullet_speed
+        >>> new_y = g.bullets[id]["y"] + g.bullets[id]["vy"] * (server_clock - last_update) * g.bullet_speed
+        >>> 0 < new_x
+        False
+        >>> 0 < new_y
+        False
+        >>> id in topop
+        True
+        '''
+>>>>>>> 6b65a1b5712702d12e21db3005aff443d693e7ea
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -225,6 +260,7 @@ class game(bonus):
             topop.append(id)
 
     def collision(self,id,idp,topop):
+<<<<<<< HEAD
         """
         vérifie si une collision a lieu entre la balle (id) et le joueur (idp)
         si oui, applique les conséquences.
@@ -235,6 +271,18 @@ class game(bonus):
         """
         assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
         assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
+=======
+        '''
+        >>> g = game()
+        >>> idp = g.test_create_id()
+        >>> id = g.test_handle_shot(idp,2,2)
+        >>> g.collision(id,idp,[-1])
+        >>> 0 <= g.bullets[id]["x"] <= map_width
+        True
+        >>> 0 <= g.bullets[id]["y"] <= map_height
+        True
+        '''
+>>>>>>> 6b65a1b5712702d12e21db3005aff443d693e7ea
         if (self.players[idp]["team"] != self.bullets[id]["team"] and
                 (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
                 (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=
@@ -260,7 +308,6 @@ class game(bonus):
         >>> g.teams[g.players[g.bullets[id]["player_id"]]["team"]]["score"] == old_score + 1
         True
         '''
-        assert idp not in topop, "player already dead"
         topop.append(idp)
         self.teams[self.players[self.bullets[id]["player_id"]]["team"]]["score"] += 1
         self.players[self.bullets[id]["player_id"]]["score"] += 1

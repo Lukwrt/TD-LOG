@@ -197,6 +197,7 @@ class game(bonus):
         >>> g.bullets[id]["y"] == new_y
         True
         '''
+
         '''
         >>> g = game()
         >>> idp = g.test_create_id()
@@ -212,8 +213,6 @@ class game(bonus):
         >>> id in topop
         True
         '''
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -234,8 +233,6 @@ class game(bonus):
         >>> 0 <= g.bullets[id]["y"] <= map_height
         True
         '''
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         if (self.players[idp]["team"] != self.bullets[id]["team"] and
                 (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
                 (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=
@@ -253,7 +250,6 @@ class game(bonus):
         >>> g.teams[g.players[g.bullets[id]["player_id"]]["team"]]["score"] == old_score + 1
         True
         '''
-        assert idp not in topop, "player already dead"
         topop.append(idp)
         self.teams[self.players[self.bullets[id]["player_id"]]["team"]]["score"] += 1
         self.players[self.bullets[id]["player_id"]]["score"] += 1

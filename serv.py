@@ -209,13 +209,11 @@ class game(bonus):
             topop.append(id_bonus)
 
     def update_bullet(self,id,topop):
-        """
+        '''
         fait evoluer la position de la balle identifie par id
         si la balle rencontre un element (joueur, obstacle) elle disparait et est ajoute a topop
-        """
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
-        '''
+
+
         >>> g = game()
         >>> idp = g.test_create_id()
         >>> id = g.test_handle_shot(idp,25,25)
@@ -230,9 +228,7 @@ class game(bonus):
         True
         >>> g.bullets[id]["y"] == new_y
         True
-        '''
 
-        '''
         >>> g = game()
         >>> idp = g.test_create_id()
         >>> id = g.test_handle_shot(idp,0,0)
@@ -247,6 +243,8 @@ class game(bonus):
         >>> id in topop
         True
         '''
+        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
+        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -257,17 +255,15 @@ class game(bonus):
             topop.append(id)
 
     def collision(self,id,idp,topop):
-        """
+        '''
         verifie si une collision a lieu entre la balle (id) et le joueur (idp)
         si oui, applique les consequences.
         :param id: id de la balle
         :param idp: id du joueur
         :param topop: liste de balle a supprimer
         :return:
-        """
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
-        '''
+
+
         >>> g = game()
         >>> idp = g.test_create_id()
         >>> id = g.test_handle_shot(idp,2,2)
@@ -277,6 +273,8 @@ class game(bonus):
         >>> 0 <= g.bullets[id]["y"] <= map_height
         True
         '''
+        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
+        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         if (self.players[idp]["team"] != self.bullets[id]["team"] and
                 (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
                 (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=
@@ -285,15 +283,14 @@ class game(bonus):
             topop.append(id)
 
     def death(self,idp,id,topop):
-        """
+        '''
         gere la mort du joueur (idp) par la balle (id),
         modifie les scores en consequences
 
         :param idp: id joueur
         :param id: id balle
         :param topop: liste de joueur qui sont deja mort a cette frame
-        """
-        '''
+
         >>> g = game()
         >>> idp = g.test_create_id()
         >>> id = g.test_handle_shot(idp,2,2)

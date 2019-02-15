@@ -290,11 +290,6 @@ class game(bonus):
         >>> id in topop
         True
         '''
-<<<<<<< HEAD
-=======
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
->>>>>>> 95234aee4020aa2a7a455d3d25a8637a03b997f2
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -321,8 +316,6 @@ class game(bonus):
         >>> 0 <= g.bullets[id]["y"] <= map_height
         True
         '''
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         if (self.players[idp]["team"] != self.bullets[id]["team"] and
                 (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
                 (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=

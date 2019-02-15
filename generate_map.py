@@ -174,8 +174,6 @@ if __name__ == "__main__":
     for c in contours:
         for k in range(len(c)):
             new_img[c[k][0]:c[k][0] + lw, c[k][1]:c[k][1] + lw] = 10*(k+2)/len(c)
-    # p
-    # p.pprint(near_contour_map[40:60,80:100])
-    # pp.pprint(tanj_map[40:60,80:100])
+
 
     print_map(new_img)

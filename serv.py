@@ -1,3 +1,5 @@
+
+# -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, session, redirect
 from flask_socketio import SocketIO, send, emit
 
@@ -83,14 +85,18 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
-        # '''
-        # >>> g = game()
-        # >>> id_ = g.test_create_id()
-        # >>> g.handle_new_connect()
-        # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
-        # True
-        # '''
-         # ne marche pas a cause du cookie session
+                # '''
+                # >>> g = game()
+                # >>> id_ = g.test_create_id()
+                # >>> g.handle_new_connect()
+                # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
+                # True
+                # '''
+                 # ne marche pas a cause du cookie session
+        """
+        gere la connection d'un nouveau joueur au serveur :
+        creer un nouvel id, affile le joueur a une equipe et renvoie au joueur les info relatives au terrain
+        """
         id = generate_valid_id(self.players)
         team_ = self.select_team()
         self.teams[team_]["players_number"] += 1
@@ -208,18 +214,17 @@ class game(bonus):
         self.players[id]["y"] = new_y
 
     def pick_bonus(self,id,id_bonus,topop):
-<<<<<<< HEAD
-        '''
-        >>> g = game()
-        >>> id_ = g.test_create_id()
-        >>> oldradius = g.players[id_]["r"]
-        >>> idbonus = generate_valid_id(g.bonus)
-        >>> g.bonus[idbonus]={'type': "heal", "x": 0, "y": 0}
-        >>> g.pick_bonus(id_,idbonus,[])
-        >>> g.BigBallRadius == 15
-        True
-        '''
-=======
+                '''
+                >>> g = game()
+                >>> id_ = g.test_create_id()
+                >>> oldradius = g.players[id_]["r"]
+                >>> idbonus = generate_valid_id(g.bonus)
+                >>> g.bonus[idbonus]={'type': "heal", "x": 0, "y": 0}
+                >>> g.pick_bonus(id_,idbonus,[])
+                >>> g.BigBallRadius == 15
+                True
+                '''
+
         """
         si le joueur reference par id est a proximite du bonus reference par id_bonus,
         le bonus est declenche sur le joeur.
@@ -227,7 +232,6 @@ class game(bonus):
         qui est la liste des id des bonus a supprimer a la frame suivante
          (topop est donc passe dynamiquement en argument)
         """
->>>>>>> 6ecbe9e9e2028afad3d41fb8a7fcf1221f9200cf
         assert id_bonus in self.bonus, "bonus does not exist"
         if (self.bonus[id_bonus]["x"] - self.players[id]["x"]) ** 2 + \
                 (self.bonus[id_bonus]["y"] - self.players[id]["y"]) ** 2 <= \
@@ -273,8 +277,11 @@ class game(bonus):
         >>> id in topop
         True
         '''
+<<<<<<< HEAD
+=======
         assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
         assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
+>>>>>>> 95234aee4020aa2a7a455d3d25a8637a03b997f2
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -292,8 +299,6 @@ class game(bonus):
         :param idp: id du joueur
         :param topop: liste de balle a supprimer
         :return:
-
-
         >>> g = game()
         >>> idp = g.test_create_id()
         >>> id = g.test_handle_shot(idp,2,2)
@@ -467,7 +472,6 @@ def generate_valid_id(dict):
     assert id>=0, "negative id"
     return id
 
-<<<<<<< HEAD
 
 class Test_game(unittest.TestCase):
     def _test_id(self,id,string,x):
@@ -508,11 +512,10 @@ class Test_game(unittest.TestCase):
 if test ==1:
     if __name__ == '__main__':
         unittest.main()
-=======
+
 if __name__ == '__main__':
     print("map size : ", map_width, map_height, " : ", map_width * map_height)
     game_session = game()
     import doctest
     doctest.testmod()
     socketio.run(app, host='127.0.0.1', port = 5000)
->>>>>>> 6ecbe9e9e2028afad3d41fb8a7fcf1221f9200cf

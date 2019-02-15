@@ -28,6 +28,9 @@ class bonus :
 
 
     def spawn_bonus(self):
+        """
+        fait spawner un bonus de type aleatoire dans une location aleatoire
+        """
         id = generate_valid_id(self.bonus)
         x, y = random.randint(0, map_height - 1), random.randint(0, map_width - 1)
         while map[x, y]:
@@ -47,17 +50,20 @@ class game(bonus):
         bonus.__init__(self)
 
         # Game Parameters :
-        self.player_speed = 2
-        self.bullet_speed = 6
-        self.bigballRadius = 15
-        self.smallballRadius = 3
-        self.dead_radius = 6
-        self.proc_distance = 20
-        self.respawn_time = 5
-        self.refreshing_time = 1 / 120
+        self.player_speed = 2 # vitesse de base des joueurs
+        self.bullet_speed = 6 # vitesse des projectiles
+        self.bigballRadius = 15 # rayon (vie) de base des joueurs
+        self.smallballRadius = 3 # rayon des projectiles
+        self.dead_radius = 6 # rayon en deca duquel le joueur meurt
+        self.proc_distance = 20 # distance de declenchement des bonus
+        self.respawn_time = 5 # temps de respawn des bonus (en secondes)
+        self.refreshing_time = 1 / 120 # temps de raffraichissement du serveur
 
 
     def handle_shot(self,id, vx, vy):
+        """
+        gere le tire du joueur identifie par id, dont le curseur est positionne en (vx,vy)
+        """
         assert type(id)==int, "wrong id"
         bullet_id = generate_valid_id(self.bullets)
         self.bullets[bullet_id] = {"x": self.players[id]["x"], "y": self.players[id]["y"],
@@ -75,6 +81,10 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
+        """
+        gere la connection d'un nouveau joueur au serveur :
+        creer un nouvel id, affile le joueur a une equipe et renvoie au joueur les info relatives au terrain
+        """
         id = generate_valid_id(self.players)
         team_ = self.select_team()
         self.teams[team_]["players_number"] += 1
@@ -112,6 +122,10 @@ class game(bonus):
 
 
     def players_update(self):
+        """
+        calcule la frame suivante du jeu, le delta de temps est calcule avec le temps actuel
+        et le temps auquel a eu lieu la derniere udpate
+        """
         global server_clock, last_update, last_bonus_respawn
         server_clock = time.clock()
         bullets_to_pop = []
@@ -145,6 +159,10 @@ class game(bonus):
 
 
     def select_team(self):
+        """
+        selectionne la team dans lequel sera affilie le prochain joueur
+        la regle est que c'est la team qui a le moins de joueur actif qui est prioritaire
+        """
         min_p, t_ = 1000, ''
         for t in self.teams:
             if self.teams[t]["players_number"] < min_p:
@@ -154,6 +172,9 @@ class game(bonus):
 
 
     def update_pos(self,id):
+        """
+        fait evoluer la position du joueur identifie par id
+        """
         assert self.players[id]["r"] >= self.dead_radius,"player should be dead"
         assert (0 <= self.players[id]["x"] <= map_width) and (
                     0 <= self.players[id]["y"] <= map_height), "player out of map"
@@ -170,6 +191,13 @@ class game(bonus):
         self.players[id]["y"] = new_y
 
     def pick_bonus(self,id,id_bonus,topop):
+        """
+        si le joueur reference par id est a proximite du bonus reference par id_bonus,
+        le bonus est declenche sur le joeur.
+        si le bonus est declenche, le bonus est retire du jeu, d'ou la presence de topop,
+        qui est la liste des id des bonus a supprimer a la frame suivante
+         (topop est donc passe dynamiquement en argument)
+        """
         assert id_bonus in self.bonus, "bonus does not exist"
         if (self.bonus[id_bonus]["x"] - self.players[id]["x"]) ** 2 + \
                 (self.bonus[id_bonus]["y"] - self.players[id]["y"]) ** 2 <= \
@@ -181,6 +209,12 @@ class game(bonus):
             topop.append(id_bonus)
 
     def update_bullet(self,id,topop):
+        """
+        fait evoluer la position de la balle identifie par id
+        si la balle rencontre un element (joueur, obstacle) elle disparait et est ajoute a topop
+        """
+        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
+        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         '''
         >>> g = game()
         >>> idp = g.test_create_id()
@@ -223,6 +257,16 @@ class game(bonus):
             topop.append(id)
 
     def collision(self,id,idp,topop):
+        """
+        verifie si une collision a lieu entre la balle (id) et le joueur (idp)
+        si oui, applique les consequences.
+        :param id: id de la balle
+        :param idp: id du joueur
+        :param topop: liste de balle a supprimer
+        :return:
+        """
+        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
+        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         '''
         >>> g = game()
         >>> idp = g.test_create_id()
@@ -241,6 +285,14 @@ class game(bonus):
             topop.append(id)
 
     def death(self,idp,id,topop):
+        """
+        gere la mort du joueur (idp) par la balle (id),
+        modifie les scores en consequences
+
+        :param idp: id joueur
+        :param id: id balle
+        :param topop: liste de joueur qui sont deja mort a cette frame
+        """
         '''
         >>> g = game()
         >>> idp = g.test_create_id()
@@ -273,6 +325,11 @@ class game(bonus):
 
 #generate id
 def generate_valid_id(dict):
+    """
+
+    :param dict: un dictionnaire dont les cles sont des entiers
+    :return: une id qui n'est pas une cle deja reference dans le dictionnaire
+    """
     id = int(time.clock() * 10 ** 5)
     while str(id) in dict:
         id = int(time.clock() * 10 ** 5)

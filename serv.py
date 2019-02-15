@@ -176,11 +176,24 @@ class game(bonus):
     def update_pos(self,id):
         """
         fait evoluer la position du joueur identifie par id
+
+        >>> g = game()
+        >>> id = g.test_create_id()
+        >>> g.players[id]["r"] >= g.dead_radius
+        True
+        >>> 0 <= g.players[id]["x"] <= map_width
+        True
+        >>> 0 <= g.players[id]["y"] <= map_height
+        True
+        >>> map[int(g.players[id]["y"])][int(g.players[id]["x"])] == False
+        True
+        >>> g.update_pos(id)
+        >>> new_x = g.players[id]["x"] + g.players[id]["vx"] * (server_clock - last_update) * g.players[id]["speed"]
+        >>> new_y = g.players[id]["y"] + g.players[id]["vy"] * (server_clock - last_update) * g.players[id]["speed"]
+        >>> new_x == max(min(new_x, map_width-1), 0)
+        True
         """
-        assert self.players[id]["r"] >= self.dead_radius,"player should be dead"
-        assert (0 <= self.players[id]["x"] <= map_width) and (
-                    0 <= self.players[id]["y"] <= map_height), "player out of map"
-        assert map[int(self.players[id]["y"])][int(self.players[id]["x"])] == False, "player in obstacle"
+        
         new_x = self.players[id]["x"] + self.players[id]["vx"] * (server_clock - last_update) * self.players[id]["speed"]
         new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id]["speed"]
         if (0 < new_y < map_height) and (0 < new_x < map_width):

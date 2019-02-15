@@ -58,6 +58,7 @@ class game(bonus):
 
 
     def handle_shot(self,id, vx, vy):
+        assert type(id)==int, "wrong id"
         bullet_id = generate_valid_id(self.bullets)
         self.bullets[bullet_id] = {"x": self.players[id]["x"], "y": self.players[id]["y"],
                           "vx": vx, "vy": vy,
@@ -133,8 +134,10 @@ class game(bonus):
 
 
     def update_pos(self,id):
-        #assert ( 0 <= self.players[id]["x"] <= map_width) and (0 <= self.players[id]["y"] <= map_height), "player out of map"
-        #assert  map[int(self.players[id]["y"])][int(self.players[id]["x"])]==False,"player in obstacle"
+        assert self.players[id]["r"] >= self.dead_radius,"player should be dead"
+        assert (0 <= self.players[id]["x"] <= map_width) and (
+                    0 <= self.players[id]["y"] <= map_height), "player out of map"
+        assert map[int(self.players[id]["y"])][int(self.players[id]["x"])] == False, "player in obstacle"
         new_x = self.players[id]["x"] + self.players[id]["vx"] * (server_clock - last_update) * self.players[id]["speed"]
         new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id]["speed"]
         if (0 < new_y < map_height) and (0 < new_x < map_width):
@@ -147,6 +150,7 @@ class game(bonus):
         self.players[id]["y"] = new_y
 
     def pick_bonus(self,id,id_bonus,topop):
+        assert id_bonus in self.bonus, "bonus does not exist"
         if (self.bonus[id_bonus]["x"] - self.players[id]["x"]) ** 2 + \
                 (self.bonus[id_bonus]["y"] - self.players[id]["y"]) ** 2 <= \
                 self.proc_distance ** 2:
@@ -157,8 +161,8 @@ class game(bonus):
             topop.append(id_bonus)
 
     def update_bullet(self,id,topop):
-        #assert (0 < self.bullets[id]["x"] < map_width) and ( 0 < self.bullets[id]["y"] < map_height),"bullet out of map"
-        #assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])]==False,"bullet in obstacle"
+        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
+        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -169,6 +173,8 @@ class game(bonus):
             topop.append(id)
 
     def collision(self,id,idp,topop):
+        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
+        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         if (self.players[idp]["team"] != self.bullets[id]["team"] and
                 (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
                 (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=
@@ -177,6 +183,7 @@ class game(bonus):
             topop.append(id)
 
     def death(self,idp,id,topop):
+        assert idp not in topop, "player already dead"
         topop.append(idp)
         self.teams[self.players[self.bullets[id]["player_id"]]["team"]]["score"] += 1
         self.players[self.bullets[id]["player_id"]]["score"] += 1

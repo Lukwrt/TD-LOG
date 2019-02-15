@@ -1,6 +1,7 @@
-// function drawing the life of the player in function of the radius of his ball
-function drawLife(rayon)
+// Function drawing the life of the player
+function drawLife(logs)
 {
+
   // h,v the x,y coordinates of the center of the life bar
   var h = 100;
   var v = 100;
@@ -9,9 +10,9 @@ function drawLife(rayon)
   var diff;
   var arrondi;
 
-  var vie = (rayon/15)*100;
+  var vie = (logs.client_players[logs.id]["r"]/15)*100;
   // base life : rayon = 15 if more because of the bonus, the circle stay fully green
-  if(rayon > 15){
+  if(logs.client_players[logs.id]["r"] > 15){
     diff = Math.PI*2;
   }
   else{
@@ -49,8 +50,7 @@ function drawLife(rayon)
   players_ctx.fillText(arrondi+'%',h+2,v+6);
   players_ctx.closePath();
 }
-
-// function drawing the ennemies positions on the minimap, (x,y) ennemy position, (w,h) position of the top left corner of the minimap
+// Function drawing the ennemies positions on the minimap, (x,y) ennemy position, (w,h) position of the top left corner of the minimap
 function drawPixel(x,y,w,h,color)
 {
   // calculating the position on the minimap in function of the compressing rate of the minimap ( here 159/1327)
@@ -64,9 +64,9 @@ function drawPixel(x,y,w,h,color)
   players_ctx.fill();
   players_ctx.closePath();
 }
-
-// drawing the minimap
-function drawMiniMap(logs){
+// Function drawing the minimap
+function drawMiniMap(logs)
+{
   //(x,y) position of the top left corner of the minimap
   var x = players_canvas.width-170;
   var y = players_canvas.height-170;
@@ -116,7 +116,7 @@ function drawMiniMap(logs){
   }
 }
 
-//function writing the pseudo of the players near their ball, (x,y) position of the ennemy on the canvas
+// Function writing the pseudo of the players near their ball
 function drawPseudo(logs,id_players)
 {
   var pseudo = logs.client_players[id_players]["pseudo"];
@@ -130,7 +130,7 @@ function drawPseudo(logs,id_players)
   players_ctx.closePath();
 }
 
-//function writing the 3 best scores
+// Function writing the 3 best scores
 function drawScore(logs)
 {
   // (x,y) positon on the canvas
@@ -150,6 +150,7 @@ function drawScore(logs)
       id_best_score[1] = id_best_score[0];
       best_score[1] = best_score[0];
       id_best_score[0] = idp;
+
       best_score[0] = logs.client_players[idp]["score"];
 
     }
@@ -165,6 +166,7 @@ function drawScore(logs)
     }
   }
 
+
   // writing a title
   players_ctx.beginPath();
   players_ctx.font = "30px Arial";
@@ -178,9 +180,11 @@ function drawScore(logs)
   {
     if(id_best_score[idp] != -1){
       //score of the player
+
       var sc = logs.client_players[id_best_score[idp]]["score"];
       // string we want to write
       var s = logs.client_players[id_best_score[idp]]["pseudo"] +" : " + sc.toString();
+
 
       // wrting the score on the canvas
       players_ctx.beginPath();
@@ -194,7 +198,86 @@ function drawScore(logs)
   }
 }
 
-function drawTeamScores(logs){
+// Function drawing the ball and the pseudo for each player in the canvas
+function drawBallAndPseudo(logs)
+{
+  for (var id_players in logs.client_players)
+  {
+    id_players = Number(id_players);
+    var x = logs.client_players[id_players]["x"];
+    var y = logs.client_players[id_players]["y"];
+    if (Math.abs(x-logs.personalX) <= canvas_width/2 && Math.abs(y-logs.personalY) <= canvas_height/2 )
+    {
+      let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
+        logs.client_players[id_players]["r"], logs.team_colors[logs.client_players[id_players]["team"]]);
+        B.drawBall();
+
+        if (logs.id != -1 )
+        {
+          drawPseudo(logs,id_players);
+        }
+      }
+    }
+  }
+
+// Function drawing bullets for each player in the canvas
+function drawBullets(logs)
+{
+  for (var id_bullets in logs.client_bullets)
+  {
+    id_bullets = Number(id_bullets);
+    var x = logs.client_bullets[id_bullets]["x"];
+    var y = logs.client_bullets[id_bullets]["y"];
+    if (Math.abs(x-logs.personalX) <= canvas_width/2 && Math.abs(y-logs.personalY) <= canvas_height/2 )
+    {
+      let B = new ball(x - logs.personalX + canvas_width/2, y - logs.personalY + canvas_height/2,
+        logs.smallballRadius, logs.team_colors[logs.client_bullets[id_bullets]["team"]]);
+      B.drawBall();
+    }
+  }
+}
+
+// Function drawing bonus items for each player in the canvas
+function drawBonus(logs)
+{
+  for (var id_bonus in logs.client_bonus)
+  {
+    id_bonus = Number(id_bonus);
+    bonus_skin = document.getElementById(logs.client_bonus[id_bonus]["type"]);
+    map_ctx.drawImage(bonus_skin,
+      logs.client_bonus[id_bonus]["x"] - logs.personalX + canvas_width/2-bonus_width/2,
+      logs.client_bonus[id_bonus]["y"] - logs.personalY + canvas_height/2-bonus_height/2,
+      bonus_width, bonus_height ) ;
+  }
+}
+
+// Main function which draws everything
+function draw(logs)
+{
+  if (drawing)
+  {
+    map_ctx.clearRect(0, 0, map_canvas.width, map_canvas.height);
+    map_ctx.drawImage( map_rendered, canvas_width/2 - logs.personalX, canvas_height/2 - logs.personalY );
+  }
+  socket.emit('request_frame');
+  if (drawing)
+  {
+    players_ctx.clearRect(0, 0, players_canvas.width, players_canvas.height);
+    if (logs.id != -1)
+    {
+      drawWidgets(logs);
+      drawBallAndPseudo(logs);
+      drawBullets(logs);
+      drawBonus(logs);
+    }
+  }
+    drawing = false;
+    requestAnimationFrame(function(){
+      draw(logs);});
+}
+// Function Drawing score for each socket
+function drawTeamScores(logs)
+{
   var x = players_canvas.width/2 - 150;
   var y = 40;
   var sc_allies;
@@ -247,10 +330,10 @@ function drawTeamScores(logs){
   players_ctx.closePath();
 
 }
-
-function drawWidgets(logs,id_players)
+// Function drawing score for each socket
+function drawWidgets(logs)
 {
-  drawPseudo(logs,id_players);
+  drawLife(logs);
   drawMiniMap(logs);
   drawScore(logs);
   drawTeamScores(logs);

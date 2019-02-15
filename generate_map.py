@@ -134,7 +134,6 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
     print(contours[i][k])
     t = tanj_map[contours[i][k][0], contours[i][k][1]]
     p = int((vx + vy * t) / np.sqrt(1 + t ** 2))
-    print(p)
     n_x, n_y = get(contours[i], k + p)
     if (n_x - x) * vx + (n_y - y) * vy <= 0:
         n_x, n_y = get(contours[i], k - p)
@@ -144,6 +143,7 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
 def load_map (filename, bw = 4, b = 5):
     map, width, height = file_to_map(filename)
     contours = get_contour(map)
+
     int_map = map.astype(int)
     tanj_map = compute_tangeante(int_map, contours, bw = bw)
     near_border = compute_nearest_border(int_map, contours, b = b)

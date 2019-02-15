@@ -251,12 +251,20 @@ def login():
         # the formulary has not been sent, we return the login page
         else:
             return render_template('login.html')
+            
+@app.route('/end_game', methods=['GET', 'POST'])
+def players_dead():
+    # if the player click on the button then he his redirected to the game
+    if request.method == 'POST':
+        return redirect('/game')
+    # the player has not clicked
+    else:
+        return render_template('end_game.html')
 
 
 @socketio.on('new_connection')
 def handle_new_connection():
     game_session.handle_new_connect()
-
 
 @socketio.on('client_shoot')
 def handle_shoot(id, vx, vy):
@@ -269,17 +277,6 @@ def handle_move(id, vx, vy):
 @socketio.on('logout')
 def handle_logout():
     return redirect('/end_game')
-
-
-@app.route('/end_game', methods=['GET', 'POST'])
-def players_dead():
-    # if the player click on the button then he his redirected to the game
-    if request.method == 'POST':
-        return redirect('/game')
-    # the player has not clicked
-    else:
-        return render_template('end_game.html')
-
 
 @socketio.on('request_frame')
 def handle_request_frame():

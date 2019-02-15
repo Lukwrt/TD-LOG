@@ -197,6 +197,10 @@
     }
   }
 
+
+/// Main script :
+  var game_infos_session = new game_infos(); // Creating a game session
+
 // Socket_IO functions
 
   socket.on('connect', function(){
@@ -219,13 +223,12 @@
     game_infos_session.update(game);
   });
 
+
 // Adding listener for moving
   document.addEventListener("mousemove", function(e){game_infos_session.mouseMoveHandler(e);}, false);
   document.addEventListener("keydown", function(e){game_infos_session.keyDownHandler(e);}, false);
   document.addEventListener("keyup", function(e){game_infos_session.keyUpHandler(e);}, false);
 
-// Main script :
-  var game_infos_session = new game_infos(); // Creating a game session
   draw(game_infos_session); // drawing the session again and again.
   </script>
 

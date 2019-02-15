@@ -65,6 +65,15 @@ class game(bonus):
                           "team": self.players[id]["team"],
                           "player_id": id}
 
+    def test_handle_shot(self,id, vx, vy):
+        assert type(id)==int, "wrong id"
+        bullet_id = generate_valid_id(self.bullets)
+        self.bullets[bullet_id] = {"x": self.players[id]["x"], "y": self.players[id]["y"],
+                          "vx": vx, "vy": vy,
+                          "team": self.players[id]["team"],
+                          "player_id": id}
+        return bullet_id
+
     def handle_new_connect(self):
         id = generate_valid_id(self.players)
         team_ = self.select_team()
@@ -78,6 +87,16 @@ class game(bonus):
         emit('authentification', {"id": id,
                               "map_width": map_width, "map_height": map_height})
 
+    def test_create_id(self):
+        id = generate_valid_id(self.players)
+        team_ = self.select_team()
+        self.teams[team_]["players_number"] += 1
+        self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
+                   "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
+                   "pseudo": "None", "score": 0,
+                   "speed": self.player_speed}
+        return id
+
     def __getattr__(self,name):
         if name == 'bullets':
             return self.bullets
@@ -89,6 +108,7 @@ class game(bonus):
             return self.bonus
         if name == 'refreshing_time':
             return self.refreshing_time
+
 
 
     def players_update(self):
@@ -183,6 +203,15 @@ class game(bonus):
             topop.append(id)
 
     def death(self,idp,id,topop):
+        '''
+        >>> g = game()
+        >>> idp = g.test_create_id()
+        >>> id = g.test_handle_shot(idp,2,2)
+        >>> old_score = g.teams[g.players[g.bullets[id]["player_id"]]["team"]]["score"]
+        >>> g.death(432929229,id,[4562626])
+        >>> g.teams[g.players[g.bullets[id]["player_id"]]["team"]]["score"] == old_score + 1
+        True
+        '''
         assert idp not in topop, "player already dead"
         topop.append(idp)
         self.teams[self.players[self.bullets[id]["player_id"]]["team"]]["score"] += 1
@@ -193,6 +222,13 @@ class game(bonus):
                     broadcast=True)
 
     def handle_movement(self, id, vx, vy):
+        '''
+        >>> g = game()
+        >>> id_ = g.test_create_id()
+        >>> g.handle_movement(id_,2,3)
+        >>> g.players[id_]['vx'] == 2 and g.players[id_]['vy'] == 3
+        True
+        '''
         self.players[id]['vx'] = vx
         self.players[id]['vy'] = vy
 
@@ -251,7 +287,7 @@ def login():
         # the formulary has not been sent, we return the login page
         else:
             return render_template('login.html')
-            
+
 @app.route('/end_game', methods=['GET', 'POST'])
 def players_dead():
     # if the player click on the button then he his redirected to the game
@@ -288,6 +324,8 @@ def handle_request_frame():
 
 
 if __name__ == '__main__':
-    print("map size : ", map_width, map_height, " : ", map_width * map_height)
-    game_session = game()
-    socketio.run(app, host='127.0.0.1', port = 5000)
+    #print("map size : ", map_width, map_height, " : ", map_width * map_height)
+    #game_session = game()
+    import doctest
+    doctest.testmod()
+    #socketio.run(app, host='127.0.0.1', port = 5000)

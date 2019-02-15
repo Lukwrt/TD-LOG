@@ -18,6 +18,8 @@ last_update = server_clock
 last_broadcast = time.clock()
 last_bonus_respawn = server_clock
 
+test = int(input("test(0/1) :"))
+
 class bonus :
     def __init__(self):
         self.nb_bonus = 5
@@ -75,17 +77,35 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
+        # '''
+        # >>> g = game()
+        # >>> id_ = g.test_create_id()
+        # >>> g.handle_new_connect()
+        # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
+        # True
+        # '''
+         # ne marche pas a cause du cookie session
         id = generate_valid_id(self.players)
         team_ = self.select_team()
         self.teams[team_]["players_number"] += 1
         print("Un joueur connecte, id : " + str(id), "team : " + team_)
 
-        self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
-                   "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
-                   "pseudo": session['pseudo'], "score": 0,
-                   "speed": self.player_speed}
+
+        self.create_player(id,team_)
         emit('authentification', {"id": id,
                               "map_width": map_width, "map_height": map_height})
+                              
+    def create_player(self,id,team_):
+        if test==0:
+            self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
+                        "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
+                        "pseudo": session['pseudo'], "score": 0,
+                        "speed": self.player_speed}
+        if test==1:
+            self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
+                        "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
+                        "pseudo": "test_pseudo", "score": 0,
+                        "speed": self.player_speed}
 
     def test_create_id(self):
         id = generate_valid_id(self.players)
@@ -140,7 +160,8 @@ class game(bonus):
         for id in players_to_pop:
             self.teams[self.players[id]["team"]]["players_number"] -= 1
             self.players.pop(id, None)
-            socketio.emit('dead', id, broadcast=True)
+            if test==0:
+                socketio.emit('dead', id, broadcast=True)
         last_update = server_clock
 
 
@@ -170,6 +191,16 @@ class game(bonus):
         self.players[id]["y"] = new_y
 
     def pick_bonus(self,id,id_bonus,topop):
+        '''
+        >>> g = game()
+        >>> id_ = g.test_create_id()
+        >>> oldradius = g.players[id_]["r"]
+        >>> idbonus = generate_valid_id(g.bonus)
+        >>> g.bonus[idbonus]={'type': "heal", "x": 0, "y": 0}
+        >>> g.pick_bonus(id_,idbonus,[])
+        >>> g.BigBallRadius == 15
+        True
+        '''
         assert id_bonus in self.bonus, "bonus does not exist"
         if (self.bonus[id_bonus]["x"] - self.players[id]["x"]) ** 2 + \
                 (self.bonus[id_bonus]["y"] - self.players[id]["y"]) ** 2 <= \
@@ -359,10 +390,67 @@ def handle_request_frame():
         socketio.emit('update', {"players": game_session.players, "bullets": game_session.bullets, "bonus": game_session.bonus}, broadcast=True)
         last_broadcast = time.clock()
 
+if test==0:
+    if __name__ == '__main__':
+        # print("map size : ", map_width, map_height, " : ", map_width * map_height)
+        game_session = game()
+        import doctest
+        doctest.testmod()
+        socketio.run(app, host='127.0.0.1', port = 5000)
+    
+##Testing
 
-if __name__ == '__main__':
-    #print("map size : ", map_width, map_height, " : ", map_width * map_height)
-    #game_session = game()
-    import doctest
-    doctest.testmod()
-    #socketio.run(app, host='127.0.0.1', port = 5000)
+import unittest
+from hypothesis import given
+import hypothesis.strategies as strats
+import time
+import random
+
+def generate_valid_id(dict):
+    id = int(time.clock() * 10 ** 5)
+    while str(id) in dict:
+        id = int(time.clock() * 10 ** 5)
+    assert type(id)==int,"wrong id"
+    assert id>=0, "negative id"
+    return id
+
+        
+class Test_game(unittest.TestCase):
+    def _test_id(self,id,string,x):
+        dictio={id:{string:x}}
+        try:
+            generate_valid_id(dictio)
+            return 1
+        except AssertionError:
+            return 0
+    @given(id=strats.integers(),string=strats.text(),x=strats.floats())
+    def test_id(self,id,string,x):
+        self.assertEqual(self._test_id(id,string,x), 1)
+    def _test_owl_game(self,G,id,vx,vy):
+        r=random.randint(1,3)
+        try:
+            #if r==1:
+             #   G.player_update()
+            if r==2:
+                G.handle_movement(id, vx, vy)
+            if r==3:
+                G.handle_shot(id, vx, vy)
+        except AssertionError:
+            return 0
+        return 1
+    @given(N1=strats.integers(),N2=strats.integers(),vx=strats.floats(),vy=strats.floats())
+    def test_owl_game(self,N1,N2,vx,vy):
+        G=game()
+        N1 = N1%10+1
+        for i in range(N1):
+            id = generate_valid_id(G.players)
+            team_ = G.select_team()
+            G.create_player(id,team_)
+        N2=N2%100
+        for i in range(N2):
+            id=random.choice(G.players.keys())
+            self.assertEqual(self._test_owl_game(G,id,vx,vy),1)
+     
+if test ==1:        
+    if __name__ == '__main__':
+        unittest.main()

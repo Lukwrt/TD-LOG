@@ -72,10 +72,6 @@ def get_contour(map):
         :param i: hauteur
         :param j: largeur
         :return: la position de l'element de contour contigu au pixel i,j -- si cet element n'existe pas, renvoie -1,-1
-<<<<<<< HEAD
-
-=======
->>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
         """
         if c_map[i + 1, j] >= 1:
             return True, i + 1, j
@@ -115,26 +111,10 @@ def get_contour(map):
 
     return contours
 
-<<<<<<< HEAD
-=======
-def get(l, k):
-    """
-    :param l: liste
-    :param k: position
-    :return: l'element de l à la position k mod n, où n est la longueur de la liste
-    permet d'acceder au element d'une liste en les voyant comme des boucles
-    """
-    n = len(l)
-    return l[k % n]
->>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
 
 
 def compute_tangeante(map, contours, bw=5):
     """
-<<<<<<< HEAD
-
-=======
->>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
     :param map: map de booleen
     :param contours: liste des differents contours
     :param bw: bande passante pour le calcul de la tangeante (permet de lisser le calul)
@@ -162,7 +142,6 @@ def compute_nearest_border(map, contours, b=3):
     :param contours: contours de la map
     :param b: on calcule seulement pour les pixels etant à distance au maximum b d'un contour
     :return: une matice, avec pour chaque pixel proche d'un contour, l'id de ce contour (relativement
-<<<<<<< HEAD
     à l'objet contour ) et la position de l'element de conteur dont il est le plus proche. affecte la valeur -1,-1
     si le coutour le plus proche de la position en question est plus loin que la distance b+1
 

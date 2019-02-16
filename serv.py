@@ -481,7 +481,7 @@ class Test_game(unittest.TestCase):
             G.create_player(id,team_)
         N2=N2%100
         for i in range(N2):
-            id=random.choice(G.players.keys())
+            id = random.choice(list(G.players.keys()))
             self.assertEqual(self._test_owl_game(G,id,vx,vy),1)
 
 

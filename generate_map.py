@@ -6,12 +6,10 @@ import pprint as pp
 
 def get_contour(map):
     """
-
     :param map: une matrice de booléens
     :return: une liste de contours, un contours étant une liste de pixel formant continuement un contour. \
     l'ordre est donc fondamental dans ces listes. chaque contours est repéré par sa position dans la liste en sortie
     de la fonction
-
     """
     height, width = map.shape[0], map.shape[1]
     c_map = np.zeros((height, width)) # la matrice qui indique la présence d'un contour par un 1
@@ -26,7 +24,6 @@ def get_contour(map):
 
     def search_one():
         """
-
         :return: la position d'un pixel faisant partie d'un contour
         les positions des éléments de contours explorés deviennent des 0 dans c_map
         """
@@ -45,7 +42,6 @@ def get_contour(map):
 
     def search_next(i, j):
         """
-
         :param i: hauteur
         :param j: largeur
         :return: la position de l'élément de contour contigu au pixel i,j -- si cet élément n'existe pas, renvoie -1,-1
@@ -90,7 +86,6 @@ def get_contour(map):
 
 def get(l, k):
     """
-
     :param l: liste
     :param k: position
     :return: l'element de l à la position k mod n, où n est la longueur de la liste
@@ -102,7 +97,6 @@ def get(l, k):
 
 def compute_tangeante(map, contours, bw=5):
     """
-
     :param map: map de booléen
     :param contours: liste des différents contours
     :param bw: bande passante pour le calcul de la tangeante (permet de lisser le calul)
@@ -125,7 +119,6 @@ def dist(x,y,x_,y_):
 
 def compute_nearest_border(map, contours, b=3):
     """
-
     :param map: map booléènne
     :param contours: contours de la map
     :param b: on calcule seulement pour les pixels étant à distance au maximum b d'un contour
@@ -152,7 +145,6 @@ def compute_nearest_border(map, contours, b=3):
 
 def get_map(filename):
     """
-
     :param filename:
     :return: la map booléène codant à partir de l'image png, si il y a présence d'obstacle.
      aplatie la matrice obtenue pour pouvoir l'envoyer par socket
@@ -187,7 +179,6 @@ def print_map(img):
 
 def slide(x, y, x_, y_, near_border, tanj_map, contours):
     """
-
     :param x: latitude initiale
     :param y: longitude initiale
     :param x_: latitude finale
@@ -213,7 +204,6 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
 
 def load_map (filename, bw = 4, b = 5):
     """
-
     :param filename:
     :param bw: bande passante
     :param b: distance limite de calcul

@@ -33,9 +33,9 @@ def assert_closed_curve (l):
 
 def get_contour(map):
     """
-    :param map: une matrice de booléens
-    :return: une liste de contours, un contours étant une liste de pixel formant continuement un contour. \
-    l'ordre est donc fondamental dans ces listes. chaque contours est repéré par sa position dans la liste en sortie
+    :param map: une matrice de booleens
+    :return: une liste de contours, un contours etant une liste de pixel formant continuement un contour. \
+    l'ordre est donc fondamental dans ces listes. chaque contours est repere par sa position dans la liste en sortie
     de la fonction
     """
     height, width = map.shape[0], map.shape[1]
@@ -72,7 +72,10 @@ def get_contour(map):
         :param i: hauteur
         :param j: largeur
         :return: la position de l'element de contour contigu au pixel i,j -- si cet element n'existe pas, renvoie -1,-1
+<<<<<<< HEAD
 
+=======
+>>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
         """
         if c_map[i + 1, j] >= 1:
             return True, i + 1, j
@@ -112,11 +115,26 @@ def get_contour(map):
 
     return contours
 
+<<<<<<< HEAD
+=======
+def get(l, k):
+    """
+    :param l: liste
+    :param k: position
+    :return: l'element de l à la position k mod n, où n est la longueur de la liste
+    permet d'acceder au element d'une liste en les voyant comme des boucles
+    """
+    n = len(l)
+    return l[k % n]
+>>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
 
 
 def compute_tangeante(map, contours, bw=5):
     """
+<<<<<<< HEAD
 
+=======
+>>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
     :param map: map de booleen
     :param contours: liste des differents contours
     :param bw: bande passante pour le calcul de la tangeante (permet de lisser le calul)
@@ -140,10 +158,11 @@ def dist(x,y,x_,y_):
 
 def compute_nearest_border(map, contours, b=3):
     """
-    :param map: map booléènne
+    :param map: map booleènne
     :param contours: contours de la map
     :param b: on calcule seulement pour les pixels etant à distance au maximum b d'un contour
     :return: une matice, avec pour chaque pixel proche d'un contour, l'id de ce contour (relativement
+<<<<<<< HEAD
     à l'objet contour ) et la position de l'element de conteur dont il est le plus proche. affecte la valeur -1,-1
     si le coutour le plus proche de la position en question est plus loin que la distance b+1
 
@@ -163,6 +182,9 @@ def compute_nearest_border(map, contours, b=3):
        [ 1,  1,  0,  0],
        [ 2,  2,  2,  0],
        [ 2,  2,  2, -1]])
+=======
+    à l'objet contour ) et la position de l'element de conteur dont il est le plus proche
+>>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
     """
     height, width = map.shape[0], map.shape[1]
     near_contour_map = -1*np.ones((height, width, 2))
@@ -227,7 +249,11 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
     :param near_border: la matrice calculee par compute_nearest_border
     :param tanj_map: la matrice calculee par compute_tangeante
     :param contours: liste des differents contours
+<<<<<<< HEAD
     :return: la position ou le joueur glisse s'il part de la position initiale et souhaiterais aller à la position
+=======
+    :return: la position où le joueur glisse s'il part de la position initiale et souhaiterais aller à la position
+>>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
     finale (la vitesse incidente à l'obstacle est donc la difference entre ces deux positions)
     """
     vx, vy = x_ - x, y_ - y

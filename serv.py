@@ -21,7 +21,7 @@ last_update = server_clock
 last_broadcast = time.clock()
 last_bonus_respawn = server_clock
 
-test = int(input("test(0/1) :"))
+test = int(input("effectuer les tests ? (oui : 1/ non :0) :"))
 
 class bonus :
     def __init__(self):
@@ -461,13 +461,11 @@ class Test_game(unittest.TestCase):
     def test_id(self,id,string,x):
         self.assertEqual(self._test_id(id,string,x), 1)
     def _test_owl_game(self,G,id,vx,vy):
-        r=random.randint(1,3)
+        r=random.randint(1,2)
         try:
-            #if r==1:
-             #   G.player_update()
-            if r==2:
+            if r==1:
                 G.handle_movement(id, vx, vy)
-            if r==3:
+            if r==2:
                 G.handle_shot(id, vx, vy)
         except AssertionError:
             return 0
@@ -489,8 +487,8 @@ class Test_game(unittest.TestCase):
 if __name__ == '__main__':
 
     if test == 1:
-        unittest.main()
         doctest.testmod()
+        unittest.main()
 
     print("map size : ", map_width, map_height, " : ", map_width * map_height)
     game_session = game()

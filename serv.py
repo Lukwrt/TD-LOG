@@ -85,14 +85,14 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
-                # '''
-                # >>> g = game()
-                # >>> id_ = g.test_create_id()
-                # >>> g.handle_new_connect()
-                # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
-                # True
-                # '''
-                 # ne marche pas a cause du cookie session
+        # '''
+        # >>> g = game()
+        # >>> id_ = g.test_create_id()
+        # >>> g.handle_new_connect()
+        # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
+        # True
+        # '''
+        # ne marche pas a cause du cookie session
         """
         gere la connection d'un nouveau joueur au serveur :
         creer un nouvel id, affile le joueur a une equipe et renvoie au joueur les info relatives au terrain
@@ -347,20 +347,21 @@ class game(bonus):
         self.players[id]['vx'] = vx
         self.players[id]['vy'] = vy
 
-## Short useful functions
+### Short useful functions
 
 #generate id
+
 def generate_valid_id(dict):
     """
-
     :param dict: un dictionnaire dont les cles sont des entiers
     :return: une id qui n'est pas une cle deja reference dans le dictionnaire
     """
     id = int(time.clock() * 10 ** 5)
     while str(id) in dict:
         id = int(time.clock() * 10 ** 5)
+    assert type(id)==int,"wrong id"
+    assert id>=0, "negative id"
     return id
-
 
 
 # returning a random color
@@ -371,9 +372,7 @@ def getRandomColor():
         color += letters[int(np.floor(random.random() * 16))]
     return color
 
-
-##Socketio functions
-
+### Socketio functions
 
 # defining the /game page by the file client.html
 @app.route('/game')
@@ -388,7 +387,6 @@ def login():
     # if pseudo is known, the player is redirected to the game
     if 'pseudo' in session:
         return redirect('/game')
-
     # the pseudo is not known
     else:
         # the formulary of login page has been sent
@@ -403,7 +401,6 @@ def login():
                 session['pseudo'] = str(request.form['ps'])
             # redirecting the player to the game
             return redirect('/game')
-
         # the formulary has not been sent, we return the login page
         else:
             return render_template('login.html')
@@ -442,31 +439,15 @@ def handle_request_frame():
         socketio.emit('update', {"players": game_session.players, "bullets": game_session.bullets, "bonus": game_session.bonus}, broadcast=True)
         last_broadcast = time.clock()
 
-if test==0:
-    if __name__ == '__main__':
-        # print("map size : ", map_width, map_height, " : ", map_width * map_height)
-        game_session = game()
-        import doctest
-        doctest.testmod()
-        socketio.run(app, host='127.0.0.1', port = 5000)
-
 ##Testing
 
+
+import doctest
 import unittest
 from hypothesis import given
 import hypothesis.strategies as strats
 import time
 import random
-
-def generate_valid_id(dict):
-    id = int(time.clock() * 10 ** 5)
-    while str(id) in dict:
-        id = int(time.clock() * 10 ** 5)
-    assert type(id)==int,"wrong id"
-    assert id>=0, "negative id"
-    return id
-
-
 class Test_game(unittest.TestCase):
     def _test_id(self,id,string,x):
         dictio={id:{string:x}}
@@ -503,13 +484,13 @@ class Test_game(unittest.TestCase):
             id=random.choice(G.players.keys())
             self.assertEqual(self._test_owl_game(G,id,vx,vy),1)
 
-if test ==1:
-    if __name__ == '__main__':
-        unittest.main()
 
 if __name__ == '__main__':
+
+    if test == 1:
+        unittest.main()
+        doctest.testmod()
+
     print("map size : ", map_width, map_height, " : ", map_width * map_height)
     game_session = game()
-    import doctest
-    doctest.testmod()
     socketio.run(app, host='127.0.0.1', port = 5000)

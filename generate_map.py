@@ -33,12 +33,10 @@ def assert_closed_curve (l):
 
 def get_contour(map):
     """
-
-    :param map: une matrice de booleens
-    :return: une liste de contours, un contours etant une liste de pixel formant continuement un contour. \
-    l'ordre est donc fondamental dans ces listes. chaque contours est repere par sa position dans la liste en sortie
+    :param map: une matrice de booléens
+    :return: une liste de contours, un contours étant une liste de pixel formant continuement un contour. \
+    l'ordre est donc fondamental dans ces listes. chaque contours est repéré par sa position dans la liste en sortie
     de la fonction
-
     """
     height, width = map.shape[0], map.shape[1]
     c_map = np.zeros((height, width)) # la matrice qui indique la presence d'un contour par un 1
@@ -71,7 +69,6 @@ def get_contour(map):
 
     def search_next(i, j):
         """
-
         :param i: hauteur
         :param j: largeur
         :return: la position de l'element de contour contigu au pixel i,j -- si cet element n'existe pas, renvoie -1,-1
@@ -143,8 +140,7 @@ def dist(x,y,x_,y_):
 
 def compute_nearest_border(map, contours, b=3):
     """
-
-    :param map: map booleènne
+    :param map: map booléènne
     :param contours: contours de la map
     :param b: on calcule seulement pour les pixels etant à distance au maximum b d'un contour
     :return: une matice, avec pour chaque pixel proche d'un contour, l'id de ce contour (relativement
@@ -188,7 +184,6 @@ def compute_nearest_border(map, contours, b=3):
 
 def get_map(filename):
     """
-
     :param filename:
     :return: la map booleène codant à partir de l'image png, si il y a presence d'obstacle.
      aplatie la matrice obtenue pour pouvoir l'envoyer par socket

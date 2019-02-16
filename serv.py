@@ -21,6 +21,8 @@ last_update = server_clock
 last_broadcast = time.clock()
 last_bonus_respawn = server_clock
 
+test = int(input("test(0/1) :"))
+
 class bonus :
     def __init__(self):
         self.nb_bonus = 5
@@ -84,6 +86,14 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
+        # '''
+        # >>> g = game()
+        # >>> id_ = g.test_create_id()
+        # >>> g.handle_new_connect()
+        # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
+        # True
+        # '''
+        # ne marche pas a cause du cookie session
         """
         gere la connection d'un nouveau joueur au serveur :
         creer un nouvel id, affile le joueur a une equipe et renvoie au joueur les info relatives au terrain
@@ -93,12 +103,22 @@ class game(bonus):
         self.teams[team_]["players_number"] += 1
         print("Un joueur connecte, id : " + str(id), "team : " + team_)
 
-        self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
-                   "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
-                   "pseudo": session['pseudo'], "score": 0,
-                   "speed": self.player_speed}
+
+        self.create_player(id,team_)
         emit('authentification', {"id": id,
                               "map_width": map_width, "map_height": map_height})
+
+    def create_player(self,id,team_):
+        if test==0:
+            self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
+                        "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
+                        "pseudo": session['pseudo'], "score": 0,
+                        "speed": self.player_speed}
+        if test==1:
+            self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
+                        "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
+                        "pseudo": "test_pseudo", "score": 0,
+                        "speed": self.player_speed}
 
     def test_create_id(self):
         id = generate_valid_id(self.players)
@@ -121,6 +141,8 @@ class game(bonus):
             return self.bonus
         if name == 'refreshing_time':
             return self.refreshing_time
+        if name == "bigballRadius":
+            return self.bigballRadius
 
 
 
@@ -157,7 +179,8 @@ class game(bonus):
         for id in players_to_pop:
             self.teams[self.players[id]["team"]]["players_number"] -= 1
             self.players.pop(id, None)
-            socketio.emit('dead', id, broadcast=True)
+            if test==0:
+                socketio.emit('dead', id, broadcast=True)
         last_update = server_clock
 
 
@@ -177,11 +200,24 @@ class game(bonus):
     def update_pos(self,id):
         """
         fait evoluer la position du joueur identifie par id
+
+        >>> g = game()
+        >>> id = g.test_create_id()
+        >>> g.players[id]["r"] >= g.dead_radius
+        True
+        >>> 0 <= g.players[id]["x"] <= map_width
+        True
+        >>> 0 <= g.players[id]["y"] <= map_height
+        True
+        >>> map[int(g.players[id]["y"])][int(g.players[id]["x"])] == False
+        True
+        >>> g.update_pos(id)
+        >>> new_x = g.players[id]["x"] + g.players[id]["vx"] * (server_clock - last_update) * g.players[id]["speed"]
+        >>> new_y = g.players[id]["y"] + g.players[id]["vy"] * (server_clock - last_update) * g.players[id]["speed"]
+        >>> new_x == max(min(new_x, map_width-1), 0)
+        True
         """
-        assert self.players[id]["r"] >= self.dead_radius,"player should be dead"
-        assert (0 <= self.players[id]["x"] <= map_width) and (
-                    0 <= self.players[id]["y"] <= map_height), "player out of map"
-        assert map[int(self.players[id]["y"])][int(self.players[id]["x"])] == False, "player in obstacle"
+
         new_x = self.players[id]["x"] + self.players[id]["vx"] * (server_clock - last_update) * self.players[id]["speed"]
         new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id]["speed"]
         if (0 < new_y < map_height) and (0 < new_x < map_width):
@@ -194,6 +230,17 @@ class game(bonus):
         self.players[id]["y"] = new_y
 
     def pick_bonus(self,id,id_bonus,topop):
+        '''
+        >>> g = game()
+        >>> id_ = g.test_create_id()
+        >>> oldradius = g.players[id_]["r"]
+        >>> idbonus = generate_valid_id(g.bonus)
+        >>> g.bonus[idbonus]={'type': "heal", "x": 0, "y": 0}
+        >>> g.pick_bonus(id_,idbonus,[])
+        >>> g.bigballRadius == 15
+        True
+        '''
+
         """
         si le joueur reference par id est a proximite du bonus reference par id_bonus,
         le bonus est declenche sur le joeur.
@@ -231,26 +278,7 @@ class game(bonus):
         True
         >>> g.bullets[id]["y"] == new_y
         True
-
-        >>> g = game()
-        >>> idp = g.test_create_id()
-        >>> id = g.test_handle_shot(idp,0,0)
-        >>> topop =[-1]
-        >>> g.update_bullet(id,topop)
-        >>> new_x = g.bullets[id]["x"] + g.bullets[id]["vx"] * (server_clock - last_update) * g.bullet_speed
-        >>> new_y = g.bullets[id]["y"] + g.bullets[id]["vy"] * (server_clock - last_update) * g.bullet_speed
-        >>> 0 < new_x
-        False
-        >>> 0 < new_y
-        False
-        >>> id in topop
-        True
         '''
-<<<<<<< HEAD
-=======
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
->>>>>>> 6ecbe9e9e2028afad3d41fb8a7fcf1221f9200cf
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed
         if (0 < new_y < map_height) and (0 < new_x < map_width) \
@@ -277,8 +305,6 @@ class game(bonus):
         >>> 0 <= g.bullets[id]["y"] <= map_height
         True
         '''
-        assert (0 <= self.bullets[id]["x"] <= map_width) and (0 <= self.bullets[id]["y"] <= map_height), "bullet out of map"
-        assert map[int(self.bullets[id]["y"])][int(self.bullets[id]["x"])] == False, "bullet in obstacle"
         if (self.players[idp]["team"] != self.bullets[id]["team"] and
                 (self.players[idp]["x"] - self.bullets[id]["x"]) ** 2 +
                 (self.players[idp]["y"] - self.bullets[id]["y"]) ** 2 <=
@@ -322,20 +348,21 @@ class game(bonus):
         self.players[id]['vx'] = vx
         self.players[id]['vy'] = vy
 
-## Short useful functions
+### Short useful functions
 
 #generate id
+
 def generate_valid_id(dict):
     """
-
     :param dict: un dictionnaire dont les cles sont des entiers
     :return: une id qui n'est pas une cle deja reference dans le dictionnaire
     """
     id = int(time.clock() * 10 ** 5)
     while str(id) in dict:
         id = int(time.clock() * 10 ** 5)
+    assert type(id)==int,"wrong id"
+    assert id>=0, "negative id"
     return id
-
 
 
 # returning a random color
@@ -346,9 +373,7 @@ def getRandomColor():
         color += letters[int(np.floor(random.random() * 16))]
     return color
 
-
-##Socketio functions
-
+### Socketio functions
 
 # defining the /game page by the file client.html
 @app.route('/game')
@@ -363,7 +388,6 @@ def login():
     # if pseudo is known, the player is redirected to the game
     if 'pseudo' in session:
         return redirect('/game')
-
     # the pseudo is not known
     else:
         # the formulary of login page has been sent
@@ -378,7 +402,6 @@ def login():
                 session['pseudo'] = str(request.form['ps'])
             # redirecting the player to the game
             return redirect('/game')
-
         # the formulary has not been sent, we return the login page
         else:
             return render_template('login.html')
@@ -417,10 +440,58 @@ def handle_request_frame():
         socketio.emit('update', {"players": game_session.players, "bullets": game_session.bullets, "bonus": game_session.bonus}, broadcast=True)
         last_broadcast = time.clock()
 
+##Testing
+
+
+import doctest
+import unittest
+from hypothesis import given
+import hypothesis.strategies as strats
+import time
+import random
+class Test_game(unittest.TestCase):
+    def _test_id(self,id,string,x):
+        dictio={id:{string:x}}
+        try:
+            generate_valid_id(dictio)
+            return 1
+        except AssertionError:
+            return 0
+    @given(id=strats.integers(),string=strats.text(),x=strats.floats())
+    def test_id(self,id,string,x):
+        self.assertEqual(self._test_id(id,string,x), 1)
+    def _test_owl_game(self,G,id,vx,vy):
+        r=random.randint(1,3)
+        try:
+            #if r==1:
+             #   G.player_update()
+            if r==2:
+                G.handle_movement(id, vx, vy)
+            if r==3:
+                G.handle_shot(id, vx, vy)
+        except AssertionError:
+            return 0
+        return 1
+    @given(N1=strats.integers(),N2=strats.integers(),vx=strats.floats(),vy=strats.floats())
+    def test_owl_game(self,N1,N2,vx,vy):
+        G=game()
+        N1 = N1%10+1
+        for i in range(N1):
+            id = generate_valid_id(G.players)
+            team_ = G.select_team()
+            G.create_player(id,team_)
+        N2=N2%100
+        for i in range(N2):
+            id = random.choice(list(G.players.keys()))
+            self.assertEqual(self._test_owl_game(G,id,vx,vy),1)
+
 
 if __name__ == '__main__':
+
+    if test == 1:
+        unittest.main()
+        doctest.testmod()
+
     print("map size : ", map_width, map_height, " : ", map_width * map_height)
     game_session = game()
-    import doctest
-    doctest.testmod()
     socketio.run(app, host='127.0.0.1', port = 5000)

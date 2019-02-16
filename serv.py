@@ -474,6 +474,9 @@ class Test_game(unittest.TestCase):
         for i in range(N2):
             id = random.choice(list(G.players.keys()))
             self.assertEqual(self._test_owl_game(G,id,vx,vy),1)
+            
+
+## running game
 
 
 if __name__ == '__main__':

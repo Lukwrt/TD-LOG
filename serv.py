@@ -85,14 +85,6 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
-        # '''
-        # >>> g = game()
-        # >>> id_ = g.test_create_id()
-        # >>> g.handle_new_connect()
-        # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
-        # True
-        # '''
-        # ne marche pas a cause du cookie session
         """
         gere la connection d'un nouveau joueur au serveur :
         creer un nouvel id, affile le joueur a une equipe et renvoie au joueur les info relatives au terrain
@@ -106,8 +98,10 @@ class game(bonus):
         emit('authentification', {"id": id,
                                   "map_width": map_width, "map_height": map_height})
 
-    def create_player(self, id, team_):
-        if test == 0:
+    def create_player(self,id,team_):
+        '''Si on effectue des tests, on a besoin que le pseudo ne dépende pas du cookie
+        '''
+        if test==0:
             self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
                                 "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
                                 "pseudo": session['pseudo'], "score": 0,
@@ -502,7 +496,7 @@ if __name__ == '__main__':
     if test == 1:
         doctest.testmod()
         unittest.main()
-
-    print("map size : ", map_width, map_height, " : ", map_width * map_height)
-    game_session = game()
-    socketio.run(app, host='127.0.0.1', port=5000)
+    elif test ==0:
+        print("map size : ", map_width, map_height, " : ", map_width * map_height)
+        game_session = game()
+        socketio.run(app, host='127.0.0.1', port = 5000)

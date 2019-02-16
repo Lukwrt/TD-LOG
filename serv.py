@@ -140,6 +140,8 @@ class game(bonus):
             return self.bonus
         if name == 'refreshing_time':
             return self.refreshing_time
+        if name == "bigballRadius":
+            return self.bigballRadius
 
 
 
@@ -234,7 +236,7 @@ class game(bonus):
                 >>> idbonus = generate_valid_id(g.bonus)
                 >>> g.bonus[idbonus]={'type': "heal", "x": 0, "y": 0}
                 >>> g.pick_bonus(id_,idbonus,[])
-                >>> g.BigBallRadius == 15
+                >>> g.bigballRadius == 15
                 True
                 '''
 

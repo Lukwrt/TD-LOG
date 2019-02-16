@@ -216,7 +216,7 @@ class game(bonus):
         >>> new_x == max(min(new_x, map_width-1), 0)
         True
         """
-        
+
         new_x = self.players[id]["x"] + self.players[id]["vx"] * (server_clock - last_update) * self.players[id]["speed"]
         new_y = self.players[id]["y"] + self.players[id]["vy"] * (server_clock - last_update) * self.players[id]["speed"]
         if (0 < new_y < map_height) and (0 < new_x < map_width):
@@ -229,16 +229,16 @@ class game(bonus):
         self.players[id]["y"] = new_y
 
     def pick_bonus(self,id,id_bonus,topop):
-                '''
-                >>> g = game()
-                >>> id_ = g.test_create_id()
-                >>> oldradius = g.players[id_]["r"]
-                >>> idbonus = generate_valid_id(g.bonus)
-                >>> g.bonus[idbonus]={'type': "heal", "x": 0, "y": 0}
-                >>> g.pick_bonus(id_,idbonus,[])
-                >>> g.bigballRadius == 15
-                True
-                '''
+        '''
+        >>> g = game()
+        >>> id_ = g.test_create_id()
+        >>> oldradius = g.players[id_]["r"]
+        >>> idbonus = generate_valid_id(g.bonus)
+        >>> g.bonus[idbonus]={'type': "heal", "x": 0, "y": 0}
+        >>> g.pick_bonus(id_,idbonus,[])
+        >>> g.bigballRadius == 15
+        True
+        '''
 
         """
         si le joueur reference par id est a proximite du bonus reference par id_bonus,

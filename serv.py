@@ -86,14 +86,6 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
-        # '''
-        # >>> g = game()
-        # >>> id_ = g.test_create_id()
-        # >>> g.handle_new_connect()
-        # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
-        # True
-        # '''
-        # ne marche pas a cause du cookie session
         """
         gere la connection d'un nouveau joueur au serveur :
         creer un nouvel id, affile le joueur a une equipe et renvoie au joueur les info relatives au terrain
@@ -102,13 +94,13 @@ class game(bonus):
         team_ = self.select_team()
         self.teams[team_]["players_number"] += 1
         print("Un joueur connecte, id : " + str(id), "team : " + team_)
-
-
         self.create_player(id,team_)
         emit('authentification', {"id": id,
                               "map_width": map_width, "map_height": map_height})
 
     def create_player(self,id,team_):
+        '''Si on effectue des tests, on a besoin que le pseudo ne dépende pas du cookie
+        '''
         if test==0:
             self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
                         "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,

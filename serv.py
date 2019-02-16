@@ -275,20 +275,6 @@ class game(bonus):
         True
         >>> g.bullets[id]["y"] == new_y
         True
-
-        >>> g = game()
-        >>> idp = g.test_create_id()
-        >>> id = g.test_handle_shot(idp,0,0)
-        >>> topop =[-1]
-        >>> g.update_bullet(id,topop)
-        >>> new_x = g.bullets[id]["x"] + g.bullets[id]["vx"] * (server_clock - last_update) * g.bullet_speed
-        >>> new_y = g.bullets[id]["y"] + g.bullets[id]["vy"] * (server_clock - last_update) * g.bullet_speed
-        >>> 0 < new_x
-        False
-        >>> 0 < new_y
-        False
-        >>> id in topop
-        True
         '''
         new_x = self.bullets[id]["x"] + self.bullets[id]["vx"] * (server_clock - last_update) * self.bullet_speed
         new_y = self.bullets[id]["y"] + self.bullets[id]["vy"] * (server_clock - last_update) * self.bullet_speed

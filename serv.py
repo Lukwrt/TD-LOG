@@ -1,5 +1,6 @@
 
 # -*- coding: utf-8 -*-
+
 from flask import Flask, render_template, request, session, redirect
 from flask_socketio import SocketIO, send, emit
 
@@ -20,7 +21,7 @@ last_update = server_clock
 last_broadcast = time.clock()
 last_bonus_respawn = server_clock
 
-test = int(input("test(0/1) :"))
+test = int(input("effectuer les tests ? (oui : 1/ non :0) :"))
 
 class bonus :
     def __init__(self):
@@ -85,14 +86,6 @@ class game(bonus):
         return bullet_id
 
     def handle_new_connect(self):
-        # '''
-        # >>> g = game()
-        # >>> id_ = g.test_create_id()
-        # >>> g.handle_new_connect()
-        # >>> abs(g.teams["red"]["players_number"]-g.teams["blue"]["players_number"])<=1
-        # True
-        # '''
-        # ne marche pas a cause du cookie session
         """
         gere la connection d'un nouveau joueur au serveur :
         creer un nouvel id, affile le joueur a une equipe et renvoie au joueur les info relatives au terrain
@@ -101,13 +94,13 @@ class game(bonus):
         team_ = self.select_team()
         self.teams[team_]["players_number"] += 1
         print("Un joueur connecte, id : " + str(id), "team : " + team_)
-
-
         self.create_player(id,team_)
         emit('authentification', {"id": id,
                               "map_width": map_width, "map_height": map_height})
 
     def create_player(self,id,team_):
+        '''Si on effectue des tests, on a besoin que le pseudo ne dépende pas du cookie
+        '''
         if test==0:
             self.players[id] = {"x": self.teams[team_]["spawn"][1], "y": self.teams[team_]["spawn"][0],
                         "vx": 0, "vy": 0, "r": self.bigballRadius, "team": team_,
@@ -460,13 +453,11 @@ class Test_game(unittest.TestCase):
     def test_id(self,id,string,x):
         self.assertEqual(self._test_id(id,string,x), 1)
     def _test_owl_game(self,G,id,vx,vy):
-        r=random.randint(1,3)
+        r=random.randint(1,2)
         try:
-            #if r==1:
-             #   G.player_update()
-            if r==2:
+            if r==1:
                 G.handle_movement(id, vx, vy)
-            if r==3:
+            if r==2:
                 G.handle_shot(id, vx, vy)
         except AssertionError:
             return 0
@@ -481,16 +472,16 @@ class Test_game(unittest.TestCase):
             G.create_player(id,team_)
         N2=N2%100
         for i in range(N2):
-            id=random.choice(G.players.keys())
+            id = random.choice(list(G.players.keys()))
             self.assertEqual(self._test_owl_game(G,id,vx,vy),1)
 
 
 if __name__ == '__main__':
 
     if test == 1:
-        unittest.main()
         doctest.testmod()
-
-    print("map size : ", map_width, map_height, " : ", map_width * map_height)
-    game_session = game()
-    socketio.run(app, host='127.0.0.1', port = 5000)
+        unittest.main()
+    elif test ==0:
+        print("map size : ", map_width, map_height, " : ", map_width * map_height)
+        game_session = game()
+        socketio.run(app, host='127.0.0.1', port = 5000)

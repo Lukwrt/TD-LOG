@@ -6,13 +6,13 @@ import pprint as pp
 
 def get_contour(map):
     """
-    :param map: une matrice de booléens
-    :return: une liste de contours, un contours étant une liste de pixel formant continuement un contour. \
-    l'ordre est donc fondamental dans ces listes. chaque contours est repéré par sa position dans la liste en sortie
+    :param map: une matrice de booleens
+    :return: une liste de contours, un contours etant une liste de pixel formant continuement un contour. \
+    l'ordre est donc fondamental dans ces listes. chaque contours est repere par sa position dans la liste en sortie
     de la fonction
     """
     height, width = map.shape[0], map.shape[1]
-    c_map = np.zeros((height, width)) # la matrice qui indique la présence d'un contour par un 1
+    c_map = np.zeros((height, width)) # la matrice qui indique la presence d'un contour par un 1
 
     for i in range(1, height - 1):
         for j in range(1, width - 1):
@@ -25,7 +25,7 @@ def get_contour(map):
     def search_one():
         """
         :return: la position d'un pixel faisant partie d'un contour
-        les positions des éléments de contours explorés deviennent des 0 dans c_map
+        les positions des elements de contours explores deviennent des 0 dans c_map
         """
         b = True
         i, j = 0, 0
@@ -44,7 +44,7 @@ def get_contour(map):
         """
         :param i: hauteur
         :param j: largeur
-        :return: la position de l'élément de contour contigu au pixel i,j -- si cet élément n'existe pas, renvoie -1,-1
+        :return: la position de l'element de contour contigu au pixel i,j -- si cet element n'existe pas, renvoie -1,-1
         """
         if c_map[i + 1, j] >= 1:
             return True, i + 1, j
@@ -89,7 +89,7 @@ def get(l, k):
     :param l: liste
     :param k: position
     :return: l'element de l à la position k mod n, où n est la longueur de la liste
-    permet d'accéder au élément d'une liste en les voyant comme des boucles
+    permet d'acceder au element d'une liste en les voyant comme des boucles
     """
     n = len(l)
     return l[k % n]
@@ -97,8 +97,8 @@ def get(l, k):
 
 def compute_tangeante(map, contours, bw=5):
     """
-    :param map: map de booléen
-    :param contours: liste des différents contours
+    :param map: map de booleen
+    :param contours: liste des differents contours
     :param bw: bande passante pour le calcul de la tangeante (permet de lisser le calul)
     :return: une matrice tanj_map avec la valeur de la pente de la tangeante pour \
      chaque position de la map, on attribut 0 aux postions ne faisant pas partie d'un contour
@@ -119,11 +119,11 @@ def dist(x,y,x_,y_):
 
 def compute_nearest_border(map, contours, b=3):
     """
-    :param map: map booléènne
+    :param map: map booleènne
     :param contours: contours de la map
-    :param b: on calcule seulement pour les pixels étant à distance au maximum b d'un contour
+    :param b: on calcule seulement pour les pixels etant à distance au maximum b d'un contour
     :return: une matice, avec pour chaque pixel proche d'un contour, l'id de ce contour (relativement
-    à l'objet contour ) et la position de l'élement de conteur dont il est le plus proche
+    à l'objet contour ) et la position de l'element de conteur dont il est le plus proche
     """
     height, width = map.shape[0], map.shape[1]
     near_contour_map = np.zeros((height, width, 2))
@@ -146,7 +146,7 @@ def compute_nearest_border(map, contours, b=3):
 def get_map(filename):
     """
     :param filename:
-    :return: la map booléène codant à partir de l'image png, si il y a présence d'obstacle.
+    :return: la map booleène codant à partir de l'image png, si il y a presence d'obstacle.
      aplatie la matrice obtenue pour pouvoir l'envoyer par socket
     """
     img = mpimg.imread(filename)
@@ -159,7 +159,7 @@ def file_to_map(filename):
     """
 
     :param filename:
-    :return: la map booléène codant à partir de l'image png, si il y a présence d'obstacle.
+    :return: la map booleène codant à partir de l'image png, si il y a presence d'obstacle.
     """
     img = mpimg.imread(filename)
     height, width = img.shape[0], img.shape[1]
@@ -183,11 +183,11 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
     :param y: longitude initiale
     :param x_: latitude finale
     :param y_: longitude finale
-    :param near_border: la matrice calculée par compute_nearest_border
-    :param tanj_map: la matrice calculée par compute_tangeante
-    :param contours: liste des différents contours
+    :param near_border: la matrice calculee par compute_nearest_border
+    :param tanj_map: la matrice calculee par compute_tangeante
+    :param contours: liste des differents contours
     :return: la position où le joueur glisse s'il part de la position initiale et souhaiterais aller à la position
-    finale (la vitesse incidente à l'obstacle est donc la différence entre ces deux positions)
+    finale (la vitesse incidente à l'obstacle est donc la difference entre ces deux positions)
     """
     vx, vy = x_ - x, y_ - y
     print(int(x),int(y))
@@ -207,7 +207,7 @@ def load_map (filename, bw = 4, b = 5):
     :param filename:
     :param bw: bande passante
     :param b: distance limite de calcul
-    :return: map, width, height, inner_slide (la fonction de glissement associée a la map)
+    :return: map, width, height, inner_slide (la fonction de glissement associee a la map)
     """
     map, width, height = file_to_map(filename)
     contours = get_contour(map)

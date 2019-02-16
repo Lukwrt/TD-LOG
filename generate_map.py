@@ -23,6 +23,7 @@ def assert_closed_curve (l):
     :return: True si l est une courbe fermee
     >>> l = [(0,0),(1,1),(2,1),(2,0),(1,0)]
     >>> assert_closed_curve(l)
+    True
     """
     ans = True
     for k in range(len(l)):
@@ -147,7 +148,25 @@ def compute_nearest_border(map, contours, b=3):
     :param contours: contours de la map
     :param b: on calcule seulement pour les pixels etant à distance au maximum b d'un contour
     :return: une matice, avec pour chaque pixel proche d'un contour, l'id de ce contour (relativement
-    à l'objet contour ) et la position de l'element de conteur dont il est le plus proche
+    à l'objet contour ) et la position de l'element de conteur dont il est le plus proche. affecte la valeur -1,-1
+    si le coutour le plus proche de la position en question est plus loin que la distance b+1
+
+    >>> int_map = np.array([[0,0,0,0],[0,1,1,0],[0,1,0,0],[0,0,0,0]]).astype(int)
+    >>> bool_map = (-1*map+1).astype(bool)
+    >>> contours = get_contour(bool_map)
+    >>> NNmap = compute_nearest_border(int_map,contours,b=2)
+    >>> pp.pprint(bool_map)
+    array([[ True,  True,  True,  True],
+       [ True, False, False,  True],
+       [ True, False,  True,  True],
+       [ True,  True,  True,  True]])
+    >>> pp.pprint(contours)
+    [[(1, 2), (1, 1), (2, 1)]]
+    >>> pp.pprint(NNmap[:,:,1])
+    array([[ 1,  1,  0,  0],
+       [ 1,  1,  0,  0],
+       [ 2,  2,  2,  0],
+       [ 2,  2,  2, -1]])
     """
     height, width = map.shape[0], map.shape[1]
     near_contour_map = -1*np.ones((height, width, 2))
@@ -238,9 +257,11 @@ def load_map (filename, bw = 4, b = 5):
     """
     map, width, height = file_to_map(filename)
     contours = get_contour(map)
+
     ### ce test verifie si tout le contours sont fermées
     for c in contours:
         assert assert_closed_curve(c), "contour non fermé"
+    ###-------------------------------------------------
 
     int_map = map.astype(int)
     tanj_map = compute_tangeante(int_map, contours, bw = bw)

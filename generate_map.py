@@ -5,10 +5,10 @@ import matplotlib.image as mpimg
 import numpy as np
 import matplotlib.pyplot as plt
 import pprint as pp
+import doctest
 
 def get(l, k):
     """
-
     :param l: liste
     :param k: position
     :return: l element de l à la position k mod n, ou n est la longueur de la liste
@@ -144,26 +144,22 @@ def compute_nearest_border(map, contours, b=3):
     :return: une matice, avec pour chaque pixel proche d'un contour, l'id de ce contour (relativement
     à l'objet contour ) et la position de l'element de conteur dont il est le plus proche. affecte la valeur -1,-1
     si le coutour le plus proche de la position en question est plus loin que la distance b+1
-
     >>> int_map = np.array([[0,0,0,0],[0,1,1,0],[0,1,0,0],[0,0,0,0]]).astype(int)
-    >>> bool_map = (-1*map+1).astype(bool)
+    >>> bool_map = ((-1)*int_map+1).astype(bool)
     >>> contours = get_contour(bool_map)
     >>> NNmap = compute_nearest_border(int_map,contours,b=2)
     >>> pp.pprint(bool_map)
     array([[ True,  True,  True,  True],
-       [ True, False, False,  True],
-       [ True, False,  True,  True],
-       [ True,  True,  True,  True]])
+           [ True, False, False,  True],
+           [ True, False,  True,  True],
+           [ True,  True,  True,  True]])
     >>> pp.pprint(contours)
     [[(1, 2), (1, 1), (2, 1)]]
     >>> pp.pprint(NNmap[:,:,1])
     array([[ 1,  1,  0,  0],
-       [ 1,  1,  0,  0],
-       [ 2,  2,  2,  0],
-       [ 2,  2,  2, -1]])
-=======
-    à l'objet contour ) et la position de l'element de conteur dont il est le plus proche
->>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
+           [ 1,  1,  0,  0],
+           [ 2,  2,  2,  0],
+           [ 2,  2,  2, -1]])
     """
     height, width = map.shape[0], map.shape[1]
     near_contour_map = -1*np.ones((height, width, 2))
@@ -228,11 +224,7 @@ def slide(x, y, x_, y_, near_border, tanj_map, contours):
     :param near_border: la matrice calculee par compute_nearest_border
     :param tanj_map: la matrice calculee par compute_tangeante
     :param contours: liste des differents contours
-<<<<<<< HEAD
-    :return: la position ou le joueur glisse s'il part de la position initiale et souhaiterais aller à la position
-=======
     :return: la position où le joueur glisse s'il part de la position initiale et souhaiterais aller à la position
->>>>>>> 51ebf68cba94b65083c4895d3670076f8d17caf9
     finale (la vitesse incidente à l'obstacle est donc la difference entre ces deux positions)
     """
     vx, vy = x_ - x, y_ - y
@@ -283,6 +275,11 @@ if __name__ == "__main__":
     """
     fait un affichage des contours obtenus
     """
+
+    test = int(input("effectuer les tests ? (oui : 1/ non :0) :"))
+    if test == 1:
+        doctest.testmod()
+
     new_img, width, height = file_to_map("./static/map_alpha.png")
 
     contours = get_contour(new_img)

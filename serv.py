@@ -481,7 +481,7 @@ if __name__ == '__main__':
     if test == 1:
         doctest.testmod()
         unittest.main()
-
-    print("map size : ", map_width, map_height, " : ", map_width * map_height)
-    game_session = game()
-    socketio.run(app, host='127.0.0.1', port = 5000)
+    else if test ==0:
+        print("map size : ", map_width, map_height, " : ", map_width * map_height)
+        game_session = game()
+        socketio.run(app, host='127.0.0.1', port = 5000)
